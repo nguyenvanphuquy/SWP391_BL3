@@ -67,6 +67,8 @@ builder.Services.AddDbContext<FptBookingContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("FptBookingContext")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFacilityTypeRepository, FacilityTypeRepository>();
+builder.Services.AddScoped<IFacilityTypeService, FacilityTypeService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
