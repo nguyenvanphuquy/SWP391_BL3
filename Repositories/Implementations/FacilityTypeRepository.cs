@@ -19,6 +19,11 @@ namespace SWP391_BL3.Repositories.Implementations
         {
             return _context.FacilityTypes.Find(id);
         }
+        public FacilityType? GetByName(string typeName)
+        {
+            return _context.FacilityTypes
+                           .FirstOrDefault(x => x.TypeName.ToLower() == typeName.ToLower());
+        }
         public void Create(FacilityType facilityType)
         {
             _context.FacilityTypes.Add(facilityType);
