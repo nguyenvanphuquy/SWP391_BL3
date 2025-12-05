@@ -70,5 +70,9 @@ namespace SWP391_BL3.Services.Implementations
             _facilityTypeRepository.Delete(facilityType);
             return true;
         }
+        public List<ListTypeResponse> GetListType()
+        {
+            return _facilityTypeRepository.GetListType();
+        }
     }
 }

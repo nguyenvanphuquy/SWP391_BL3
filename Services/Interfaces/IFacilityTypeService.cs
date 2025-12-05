@@ -11,5 +11,6 @@ namespace SWP391_BL3.Services.Interfaces
         FacilityTypeResponse?  Create(FacilityTypeRequest facilityTypeRequest);
         FacilityTypeResponse? Update(int id, FacilityTypeRequest facilityTypeRequest);
         bool Delete(int id);
+        List<ListTypeResponse> GetListType();
     }
 }
