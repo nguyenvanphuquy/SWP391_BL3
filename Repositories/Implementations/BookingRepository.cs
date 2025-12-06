@@ -3,6 +3,7 @@ using SWP391_BL3.Data;
 using SWP391_BL3.Models.DTOs.Response;
 using SWP391_BL3.Models.Entities;
 using SWP391_BL3.Repositories.Interfaces;
+
 namespace SWP391_BL3.Repositories.Implementations
 {
     public class BookingRepository : IBookingRepository
@@ -67,10 +68,39 @@ namespace SWP391_BL3.Repositories.Implementations
                             FullName = u.FullName,
                             FacilityCode = f.FacilityCode,
                             BookingDate = b.BookingDate,
+                            StartTime = sl.StartTime,
+                            EndTime = sl.EndTime,
                             Purpose = b.Purpose,
                             Status = b.Status,
                         }).ToList();
             return List;
+        }
+        public BookingDetailResponse GetBookingDetail(int bookingId)
+        {
+            var detail = (from b in _context.Bookings
+                          join u in _context.Users on b.UserId equals u.UserId
+                          join f in _context.Facilities on b.FacilityId equals f.FacilityId
+                          join ft in _context.FacilityTypes on f.TypeId equals ft.TypeId
+                          join c in _context.Campuses on f.CampusId equals c.CampusId
+                          join sl in _context.Slots on b.SlotId equals sl.SlotId
+                          where b.BookingId == bookingId
+                          select new BookingDetailResponse
+                          {
+                              BookingId = b.BookingId,
+                              BookingCode = b.BookingCode,
+                              Status = b.Status,
+                              CreateAt = b.CreateAt,
+                              FullName = u.FullName,
+                              FacilityName = f.FacilityCode,
+                              FacilityType = ft.TypeName,
+                              CampusName = c.CampusName,
+                              Capacity = f.Capacity,
+                              BookingDate = b.BookingDate,
+                              StartTime = sl.StartTime,
+                              EndTime = sl.EndTime,
+                              Purpose = b.Purpose,
+                          }).FirstOrDefault();
+            return detail;
         }
     }
 }

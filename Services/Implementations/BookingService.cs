@@ -112,5 +112,9 @@ namespace SWP391_BL3.Services.Implementations
         {
             return _bookingRepository.GetBookingList();
         }
+        public BookingDetailResponse GetBookingDetail(int bookingId)
+        {
+            return _bookingRepository.GetBookingDetail(bookingId);
+        }
     }
 }

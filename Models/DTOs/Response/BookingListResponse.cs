@@ -6,7 +6,8 @@
         public string BookingCode { get; set; }
         public string FullName { get; set; }
         public string FacilityCode { get; set; }
-        public string SlotTime { get; set; }   
+        public TimeOnly? StartTime { get; set; }  
+        public TimeOnly? EndTime { get; set; }
         public DateOnly? BookingDate { get; set; }
         public string Purpose { get; set; }
         public string Status { get; set; }

@@ -11,5 +11,6 @@ namespace SWP391_BL3.Repositories.Interfaces
         IEnumerable<Booking> GetAll();
         bool Delete(int id);
         List<BookingListResponse> GetBookingList();
+        BookingDetailResponse GetBookingDetail(int bookingId);
     }
 }

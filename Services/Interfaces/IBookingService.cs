@@ -11,5 +11,6 @@ namespace SWP391_BL3.Services.Interfaces
         List<BookingResponse> GetAllBookings();
         bool DeleteBooking(int id);
         List<BookingListResponse> GetBookingList();
+        BookingDetailResponse GetBookingDetail(int bookingId);
     }
 }
