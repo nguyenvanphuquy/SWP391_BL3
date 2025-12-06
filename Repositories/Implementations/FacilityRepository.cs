@@ -19,6 +19,11 @@ namespace SWP391_BL3.Repositories.Implementations
         {
             return _context.Facilities.Find(id);
         }
+        public Facility? GetByCode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return null;
+            return _context.Facilities.FirstOrDefault(f => f.FacilityCode == code);
+        }
         public void Create(Facility facility)
         {
             _context.Facilities.Add(facility);

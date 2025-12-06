@@ -6,6 +6,7 @@ namespace SWP391_BL3.Repositories.Interfaces
     {
         IEnumerable<Facility> GetAll();
         Facility? GetById(int id);
+        Facility? GetByCode(string code);
         void Create(Facility facility);
         void Update(Facility facility);
         void Delete(Facility facility);
