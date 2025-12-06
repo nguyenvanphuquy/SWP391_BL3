@@ -2,8 +2,7 @@
 {
     public class UpdateBookingRequest
     {
-        public string Purpose { get; set; }
-        public int NumberOfMember { get; set; }
         public string Status { get; set; }
+        public string RejectionReason { get; set; }
     }
 }

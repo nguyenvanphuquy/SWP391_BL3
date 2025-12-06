@@ -11,5 +11,11 @@
 
         public string UserFullName { get; set; }
         public string FacilityCode { get; set; }
+        public string? RejectionReason { get; set; }
+        public int? ApprovedByUserId { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public string RejectionType { get; set; }
+        public DateTime? UpdateAt { get; set; }
+
     }
 }

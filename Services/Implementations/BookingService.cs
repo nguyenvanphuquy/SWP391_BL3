@@ -8,12 +8,19 @@ namespace SWP391_BL3.Services.Implementations
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        public BookingService(IBookingRepository bookingRepository)
+        private readonly ISlotRepository _slotRepository;
+        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository)
         {
             _bookingRepository = bookingRepository;
+            _slotRepository = slotRepository;
         }
         public BookingResponse CreateBooking(BookingRequest request)
         {
+            var slot = _slotRepository.GetByNumber(request.SlotNumber);
+            if (slot == null)
+            {
+                throw new ArgumentException($"Slot '{request.SlotNumber}' not found.");
+            }
             var booking = new Booking
             {
                 BookingCode = request.BookingCode,
@@ -22,6 +29,7 @@ namespace SWP391_BL3.Services.Implementations
                 NumberOfMenber = request.NumberOfMember,
                 UserId = request.UserId,
                 FacilityId = request.FacilityId,
+                SlotId = slot.SlotId,
                 Status = "Pending",
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now
@@ -43,18 +51,37 @@ namespace SWP391_BL3.Services.Implementations
             };
         }
 
-        public BookingResponse UpdateBooking(int id, UpdateBookingRequest request)
+        public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)
         {
             var booking = _bookingRepository.GetById(id);
-            if (booking == null) return null;
+            if (request.Status == "Approved")
+            {
+                booking.Status = request.Status;
+                booking.ApprovedByUserId = currentUserId;
+                booking.ApprovedAt = DateTime.Now;
+                booking.RejectionReason = null; 
+            }
 
-            booking.Purpose = request.Purpose;
-            booking.NumberOfMenber = request.NumberOfMember;
-            booking.Status = request.Status;
+            else if (request.Status == "Rejected")
+            {
+                if (string.IsNullOrWhiteSpace(request.RejectionReason))
+                {
+                    throw new ArgumentException("Rejection reason is required when rejecting a booking.");
+                }
+
+                booking.Status = request.Status;
+                booking.RejectionReason = request.RejectionReason;
+                booking.ApprovedByUserId = currentUserId; 
+                booking.ApprovedAt = DateTime.Now;
+            }
+            else
+            {
+                booking.Status = request.Status;
+            }
+
             booking.UpdateAt = DateTime.Now;
 
             _bookingRepository.Update(booking);
-
             booking = _bookingRepository.GetById(id);
 
             return new BookingResponse
@@ -65,8 +92,12 @@ namespace SWP391_BL3.Services.Implementations
                 Purpose = booking.Purpose,
                 NumberOfMember = booking.NumberOfMenber,
                 Status = booking.Status,
+                ApprovedByUserId = booking.ApprovedByUserId,
+                ApprovedAt = booking.ApprovedAt,
+                RejectionReason = booking.RejectionReason,
                 UserFullName = booking.User.FullName,
-                FacilityCode = booking.Facility.FacilityCode
+                FacilityCode = booking.Facility.FacilityCode,
+                UpdateAt = booking.UpdateAt
             };
         }
 
