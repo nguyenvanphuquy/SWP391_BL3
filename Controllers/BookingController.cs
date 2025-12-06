@@ -24,9 +24,9 @@ namespace SWP391_BL3.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateBookingRequest request)
+        public IActionResult Update(int id, UpdateBookingRequest request, int currentUserId)
         {
-            var result = _bookingService.UpdateBooking(id, request);
+            var result = _bookingService.UpdateBooking(id, request, currentUserId);
             if (result == null) return NotFound("Booking not found");
             return Ok(result);
         }

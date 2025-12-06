@@ -6,7 +6,7 @@ namespace SWP391_BL3.Services.Interfaces
     public interface IBookingService 
     {
         BookingResponse CreateBooking(BookingRequest request);
-        BookingResponse UpdateBooking(int id, UpdateBookingRequest request);
+        BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId);
         BookingResponse GetBooking(int id);
         List<BookingResponse> GetAllBookings();
         bool DeleteBooking(int id);
