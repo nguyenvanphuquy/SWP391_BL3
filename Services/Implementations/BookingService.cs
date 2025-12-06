@@ -108,5 +108,9 @@ namespace SWP391_BL3.Services.Implementations
         {
             return _bookingRepository.Delete(id);
         }
+        public List<BookingListResponse> GetBookingList()
+        {
+            return _bookingRepository.GetBookingList();
+        }
     }
 }

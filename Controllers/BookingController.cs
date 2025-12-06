@@ -53,6 +53,12 @@ namespace SWP391_BL3.Controllers
 
             return Ok("Deleted successfully");
         }
+        [HttpGet("List")]
+        public IActionResult GetBookingList()
+        {
+            var result = _bookingService.GetBookingList();
+            return Ok(result);
+        }
     }
 }
 
