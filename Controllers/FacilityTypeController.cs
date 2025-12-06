@@ -6,10 +6,10 @@ namespace SWP391_BL3.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FacilitiTypeController : ControllerBase
+    public class FacilityTypeController : ControllerBase
     {
         private readonly IFacilityTypeService _facilityTypeService;
-        public FacilitiTypeController(IFacilityTypeService facilityTypeService)
+        public FacilityTypeController(IFacilityTypeService facilityTypeService)
         {
             _facilityTypeService = facilityTypeService;
         }

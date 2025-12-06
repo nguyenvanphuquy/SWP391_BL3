@@ -1,3 +1,4 @@
+using BE_SWP391.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -36,7 +37,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "BE_SWP391 API",
         Version = "v1",
-        Description = "API documentation for EV Market Project"
+        Description = "API documentation for FPT_BOOKING"
     });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -72,6 +73,8 @@ builder.Services.AddScoped<IFacilityTypeService, FacilityTypeService>();
 builder.Services.AddScoped<IFacilityService, FacilityService>();
 builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
 builder.Services.AddScoped<ICampusRepository, CampusRepository>();
+builder.Services.AddScoped<ICampusService, CampusService>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
