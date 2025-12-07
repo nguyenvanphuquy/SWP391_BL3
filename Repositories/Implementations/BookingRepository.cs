@@ -54,9 +54,6 @@ namespace SWP391_BL3.Repositories.Implementations
         }
         public List<BookingListResponse> GetBookingList()
         {
-            //string   slotTime = slot != null
-            //? $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
-            //: "N/A";
             var List = (from b in _context.Bookings
                         join u in _context.Users on b.UserId equals u.UserId
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
@@ -102,5 +99,64 @@ namespace SWP391_BL3.Repositories.Implementations
                           }).FirstOrDefault();
             return detail;
         }
+        public List<ListBookingUserResponse> GetListBookingUsers(int userId)
+        {
+            var list = (from b in _context.Bookings
+                        join f in _context.Facilities on b.FacilityId equals f.FacilityId
+                        join sl in _context.Slots on b.SlotId equals sl.SlotId
+                        where b.UserId == userId
+                        select new ListBookingUserResponse
+                        {
+                            BookingId = b.BookingId,
+                            BookingCode = b.BookingCode,
+                            FacilityCode = f.FacilityCode,
+                            BookingDate = b.BookingDate,
+                            Startime = sl.StartTime,
+                            Endtime = sl.EndTime,
+                            Purpose = b.Purpose,
+                            Status = b.Status,
+                        }).ToList();
+            return list;
+        }
+        public BookingStatsResponse GetUserBookingStats(int userId)
+        {
+            var bookings = _context.Bookings
+                .Include(b => b.Facility)
+                .Where(b => b.UserId == userId)
+                .ToList();
+
+            if (bookings.Count == 0)
+            {
+                return new BookingStatsResponse
+                {
+                    TotalBookings = 0,
+                    SuccessRate = 0,
+                    MostBookedFacilityType = "N/A"
+                };
+            }
+
+            // Tổng số lần đặt phòng
+            var total = bookings.Count;
+
+            // Tỷ lệ đặt phòng thành công
+            var approvedCount = bookings.Count(b => b.Status == "Approved");
+            double successRate = Math.Round((approvedCount * 100.0) / total, 2);
+
+            // Loại phòng đặt nhiều nhất
+            var mostBooked = bookings
+                .Where(b => b.Facility?.Type?.TypeName != null)  // lọc null an toàn
+                .GroupBy(b => b.Facility.Type.TypeName)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? "Unknown";
+
+            return new BookingStatsResponse
+            {
+                TotalBookings = total,
+                SuccessRate = successRate,
+                MostBookedFacilityType = mostBooked
+            };
+        }
+
     }
 }

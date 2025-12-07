@@ -66,6 +66,18 @@ namespace SWP391_BL3.Controllers
             if (result == null) return NotFound("Booking not found");
             return Ok(result);
         }
+        [HttpGet("User/{userId}")]
+        public IActionResult GetBookingsByUser(int userId)
+        {
+            var result = _bookingService.GetListBookingUsers(userId);
+            return Ok(result);
+        }
+        [HttpGet("Stats/{userId}")]
+        public IActionResult GetUserBookingStats(int userId)
+        {
+            var result = _bookingService.GetUserBookingStats(userId);
+            return Ok(result);
+        }
     }
 }
 

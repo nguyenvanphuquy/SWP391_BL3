@@ -12,5 +12,7 @@ namespace SWP391_BL3.Repositories.Interfaces
         bool Delete(int id);
         List<BookingListResponse> GetBookingList();
         BookingDetailResponse GetBookingDetail(int bookingId);
+        List<ListBookingUserResponse> GetListBookingUsers(int userId);
+        BookingStatsResponse GetUserBookingStats(int userId);
     }
 }

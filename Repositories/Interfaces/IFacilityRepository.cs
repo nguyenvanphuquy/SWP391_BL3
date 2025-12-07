@@ -1,4 +1,5 @@
-﻿using SWP391_BL3.Models.Entities;
+﻿using SWP391_BL3.Models.DTOs.Response;
+using SWP391_BL3.Models.Entities;
 
 namespace SWP391_BL3.Repositories.Interfaces
 {
@@ -10,5 +11,6 @@ namespace SWP391_BL3.Repositories.Interfaces
         void Create(Facility facility);
         void Update(Facility facility);
         void Delete(Facility facility);
+        List<FacilityListResponse> GetFacilityList();
     }
 }

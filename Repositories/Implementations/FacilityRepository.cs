@@ -1,6 +1,8 @@
-﻿using SWP391_BL3.Data;
+﻿using Microsoft.Build.Construction;
+using SWP391_BL3.Data;
 using SWP391_BL3.Models.Entities;
 using SWP391_BL3.Repositories.Interfaces;
+using SWP391_BL3.Models.DTOs.Response;
 
 namespace SWP391_BL3.Repositories.Implementations
 {
@@ -38,6 +40,24 @@ namespace SWP391_BL3.Repositories.Implementations
         {
             _context.Facilities.Remove(facility);
             _context.SaveChanges();
+        }
+        public List<FacilityListResponse> GetFacilityList()
+        {
+            var list = (from f in _context.Facilities
+                        join c in _context.Campuses on f.CampusId equals c.CampusId
+                        join t in _context.FacilityTypes on f.TypeId equals t.TypeId
+                        select new FacilityListResponse
+                        {
+                            FacilityId = f.FacilityId,
+                            FacilityCode = f.FacilityCode,
+                            Capacity = f.Capacity,
+                            Floors = f.Floor,
+                            Equipment = f.Equipment,
+                            Status = f.Status,
+                            CampusName = c.CampusName,
+                            TypeName = t.TypeName
+                        }).ToList();
+            return list;
         }
     }
 }

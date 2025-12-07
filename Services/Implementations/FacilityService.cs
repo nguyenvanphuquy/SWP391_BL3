@@ -148,5 +148,10 @@ namespace SWP391_BL3.Services.Implementations
             _facilityRepository.Delete(facility);
             return true;
         }
+        public List<FacilityListResponse> GetFacilityList()
+        {
+            return _facilityRepository.GetFacilityList();
+            
+        }
     }
 }

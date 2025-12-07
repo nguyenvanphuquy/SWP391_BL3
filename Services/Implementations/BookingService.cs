@@ -51,55 +51,55 @@ namespace SWP391_BL3.Services.Implementations
             };
         }
 
-        public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)
-        {
-            var booking = _bookingRepository.GetById(id);
-            if (request.Status == "Approved")
+            public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)
             {
-                booking.Status = request.Status;
-                booking.ApprovedByUserId = currentUserId;
-                booking.ApprovedAt = DateTime.Now;
-                booking.RejectionReason = null; 
-            }
-
-            else if (request.Status == "Rejected")
-            {
-                if (string.IsNullOrWhiteSpace(request.RejectionReason))
+                var booking = _bookingRepository.GetById(id);
+                if (request.Status == "Approved")
                 {
-                    throw new ArgumentException("Rejection reason is required when rejecting a booking.");
+                    booking.Status = request.Status;
+                    booking.ApprovedByUserId = currentUserId;
+                    booking.ApprovedAt = DateTime.Now;
+                    booking.RejectionReason = null; 
                 }
 
-                booking.Status = request.Status;
-                booking.RejectionReason = request.RejectionReason;
-                booking.ApprovedByUserId = currentUserId; 
-                booking.ApprovedAt = DateTime.Now;
+                else if (request.Status == "Rejected")
+                {
+                    if (string.IsNullOrWhiteSpace(request.RejectionReason))
+                    {
+                        throw new ArgumentException("Rejection reason is required when rejecting a booking.");
+                    }
+
+                    booking.Status = request.Status;
+                    booking.RejectionReason = request.RejectionReason;
+                    booking.ApprovedByUserId = currentUserId; 
+                    booking.ApprovedAt = DateTime.Now;
+                }
+                else
+                {
+                    booking.Status = request.Status;
+                }
+
+                booking.UpdateAt = DateTime.Now;
+
+                _bookingRepository.Update(booking);
+                booking = _bookingRepository.GetById(id);
+
+                return new BookingResponse
+                {
+                    BookingId = booking.BookingId,
+                    BookingCode = booking.BookingCode,
+                    BookingDate = booking.BookingDate,
+                    Purpose = booking.Purpose,
+                    NumberOfMember = booking.NumberOfMenber,
+                    Status = booking.Status,
+                    ApprovedByUserId = booking.ApprovedByUserId,
+                    ApprovedAt = booking.ApprovedAt,
+                    RejectionReason = booking.RejectionReason,
+                    UserFullName = booking.User.FullName,
+                    FacilityCode = booking.Facility.FacilityCode,
+                    UpdateAt = booking.UpdateAt
+                };
             }
-            else
-            {
-                booking.Status = request.Status;
-            }
-
-            booking.UpdateAt = DateTime.Now;
-
-            _bookingRepository.Update(booking);
-            booking = _bookingRepository.GetById(id);
-
-            return new BookingResponse
-            {
-                BookingId = booking.BookingId,
-                BookingCode = booking.BookingCode,
-                BookingDate = booking.BookingDate,
-                Purpose = booking.Purpose,
-                NumberOfMember = booking.NumberOfMenber,
-                Status = booking.Status,
-                ApprovedByUserId = booking.ApprovedByUserId,
-                ApprovedAt = booking.ApprovedAt,
-                RejectionReason = booking.RejectionReason,
-                UserFullName = booking.User.FullName,
-                FacilityCode = booking.Facility.FacilityCode,
-                UpdateAt = booking.UpdateAt
-            };
-        }
 
         public BookingResponse GetBooking(int id)
         {
@@ -146,6 +146,14 @@ namespace SWP391_BL3.Services.Implementations
         public BookingDetailResponse GetBookingDetail(int bookingId)
         {
             return _bookingRepository.GetBookingDetail(bookingId);
+        }
+        public List<ListBookingUserResponse> GetListBookingUsers(int userId)
+        {
+            return _bookingRepository.GetListBookingUsers(userId);
+        }
+        public BookingStatsResponse GetUserBookingStats(int userId)
+        {
+            return _bookingRepository.GetUserBookingStats(userId);
         }
     }
 }
