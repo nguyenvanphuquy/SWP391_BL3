@@ -19,8 +19,23 @@ namespace SWP391_BL3.Controllers
         [HttpPost]
         public IActionResult Create(BookingRequest request)
         {
-            var result = _bookingService.CreateBooking(request);
-            return Ok(result);
+            try
+            {
+                var result = _bookingService.CreateBooking(request);
+                return Ok(result);
+            }
+            catch (InvalidOperationException)
+            {
+                return Conflict(new { message = "Slot đã được đặt" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
         }
 
         [HttpPut("{id}")]

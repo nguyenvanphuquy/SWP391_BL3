@@ -16,11 +16,31 @@ namespace SWP391_BL3.Services.Implementations
         }
         public BookingResponse CreateBooking(BookingRequest request)
         {
+            // Kiểm tra BookingDate phải >= ngày hiện tại
+            if (request.BookingDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new ArgumentException("Ngày đặt phòng phải từ hôm nay trở đi");
+            }
+
             var slot = _slotRepository.GetByNumber(request.SlotNumber);
             if (slot == null)
             {
                 throw new ArgumentException($"Slot '{request.SlotNumber}' not found.");
             }
+
+            var existingBooking = _bookingRepository.GetAll()
+                          .FirstOrDefault(b => b.FacilityId == request.FacilityId
+                          && b.BookingDate == request.BookingDate
+                          && b.SlotId == slot.SlotId
+                          && b.Status != "Cancelled");
+
+            if (existingBooking != null)
+            {
+                throw new InvalidOperationException(
+                    $"Phòng '{request.FacilityId}' đã được đặt vào ngày {request.BookingDate:dd/MM/yyyy} " +
+                    $"cho slot '{request.SlotNumber}'. Vui lòng chọn slot hoặc ngày khác.");
+            }
+
             var booking = new Booking
             {
                 BookingCode = request.BookingCode,
@@ -50,8 +70,7 @@ namespace SWP391_BL3.Services.Implementations
                 FacilityCode = result.Facility.FacilityCode
             };
         }
-
-            public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)
+        public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)
             {
                 var booking = _bookingRepository.GetById(id);
                 if (request.Status == "Approved")

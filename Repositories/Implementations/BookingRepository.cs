@@ -58,6 +58,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         join u in _context.Users on b.UserId equals u.UserId
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
+                        orderby b.BookingDate descending
                         select new BookingListResponse
                         {
                             BookingId = b.BookingId,
@@ -109,6 +110,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         {
                             BookingId = b.BookingId,
                             BookingCode = b.BookingCode,
+                            FacilityId = f.FacilityId,
                             FacilityCode = f.FacilityCode,
                             BookingDate = b.BookingDate,
                             Startime = sl.StartTime,
@@ -135,16 +137,13 @@ namespace SWP391_BL3.Repositories.Implementations
                 };
             }
 
-            // Tổng số lần đặt phòng
             var total = bookings.Count;
 
-            // Tỷ lệ đặt phòng thành công
             var approvedCount = bookings.Count(b => b.Status == "Approved");
             double successRate = Math.Round((approvedCount * 100.0) / total, 2);
 
-            // Loại phòng đặt nhiều nhất
             var mostBooked = bookings
-                .Where(b => b.Facility?.Type?.TypeName != null)  // lọc null an toàn
+                .Where(b => b.Facility?.Type?.TypeName != null)  
                 .GroupBy(b => b.Facility.Type.TypeName)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Key)

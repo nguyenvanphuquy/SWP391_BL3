@@ -61,15 +61,17 @@ namespace SWP391_BL3.Services.Implementations
         public IEnumerable<UserInforResponse> GetAllInfor()
         {
             var users = _userRepository.GetAllInfor();
-            var userInforResponses = users.Select(user => new UserInforResponse
-            {
-                id = user.UserId,
-                name = user.FullName ?? string.Empty,
-                email = user.Email,
-                roleName = user.Role != null ? user.Role.RoleName : "N/A",
-                booking = user.BookingUsers != null ? user.BookingUsers.Count : 0,
-                status = user.Status
-            });
+            var userInforResponses = users
+                .OrderByDescending(user => user.CreateAt) // Thêm dòng này - sắp xếp theo ngày tạo mới nhất
+                .Select(user => new UserInforResponse
+                {
+                    id = user.UserId,
+                    name = user.FullName ?? string.Empty,
+                    email = user.Email,
+                    roleName = user.Role != null ? user.Role.RoleName : "N/A",
+                    booking = user.BookingUsers != null ? user.BookingUsers.Count : 0,
+                    status = user.Status
+                });
             return userInforResponses;
         }
         public UserResponse? GetById(int id)

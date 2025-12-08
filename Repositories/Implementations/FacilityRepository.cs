@@ -46,6 +46,7 @@ namespace SWP391_BL3.Repositories.Implementations
             var list = (from f in _context.Facilities
                         join c in _context.Campuses on f.CampusId equals c.CampusId
                         join t in _context.FacilityTypes on f.TypeId equals t.TypeId
+                        orderby f.CreateAt descending
                         select new FacilityListResponse
                         {
                             FacilityId = f.FacilityId,
