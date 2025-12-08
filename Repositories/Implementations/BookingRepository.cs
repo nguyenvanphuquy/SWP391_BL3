@@ -106,6 +106,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
                         where b.UserId == userId
+                        orderby b.BookingDate descending
                         select new ListBookingUserResponse
                         {
                             BookingId = b.BookingId,
