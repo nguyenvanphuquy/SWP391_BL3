@@ -11,5 +11,6 @@ namespace SWP391_BL3.Services.Interfaces
         FeedbackResponse GetById(int id);
         IEnumerable<FeedbackResponse> GetAll();
         IEnumerable<FeedbackResponse> GetByFacility(int facilityId);
+        List<FeedbackListResponse> GetFeedbackList();
     }
 }

@@ -58,7 +58,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         join u in _context.Users on b.UserId equals u.UserId
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
-                        orderby b.BookingDate descending
+                        orderby b.BookingDate descending , b.CreateAt descending
                         select new BookingListResponse
                         {
                             BookingId = b.BookingId,
@@ -106,7 +106,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
                         where b.UserId == userId
-                        orderby b.BookingDate descending
+                        orderby b.BookingDate descending , b.CreateAt descending
                         select new ListBookingUserResponse
                         {
                             BookingId = b.BookingId,
@@ -140,7 +140,9 @@ namespace SWP391_BL3.Repositories.Implementations
 
             var total = bookings.Count;
 
-            var approvedCount = bookings.Count(b => b.Status == "Approved");
+            var approvedCount = bookings.Count(b =>
+                b.Status != null &&
+                b.Status.Equals("approved", StringComparison.OrdinalIgnoreCase));
             double successRate = Math.Round((approvedCount * 100.0) / total, 2);
 
             var mostBooked = bookings
@@ -148,7 +150,7 @@ namespace SWP391_BL3.Repositories.Implementations
                 .GroupBy(b => b.Facility.Type.TypeName)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Key)
-                .FirstOrDefault() ?? "Unknown";
+                .FirstOrDefault() ?? "";
 
             return new BookingStatsResponse
             {

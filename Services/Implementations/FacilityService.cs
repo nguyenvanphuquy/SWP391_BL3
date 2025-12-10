@@ -153,5 +153,9 @@ namespace SWP391_BL3.Services.Implementations
             return _facilityRepository.GetFacilityList();
             
         }
+        public FacilityDetailResponse GetFacilityDetail(int facilityId)
+        {
+            return _facilityRepository.GetFacilityDetail(facilityId);
+        }
     }
 }

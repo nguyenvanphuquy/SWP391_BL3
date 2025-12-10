@@ -24,19 +24,28 @@ namespace SWP391_BL3.Controllers
                 var result = _bookingService.CreateBooking(request);
                 return Ok(result);
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
-                return Conflict(new { message = "Slot đã được đặt" });
+                // Dùng cho conflict như: phòng đã bị đặt, số lượng người vượt capacity...
+                return Conflict(new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
+                // Dùng cho dữ liệu đầu vào sai: slot không tồn tại, facility không tồn tại, bookingDate sai
                 return BadRequest(new { message = ex.Message });
             }
-            catch (Exception)
+            catch (KeyNotFoundException ex)
             {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
+                // Nếu service ném lỗi khi không tìm thấy resource
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Lỗi không xác định
+                return StatusCode(500, new { message = "Lỗi hệ thống", detail = ex.Message });
             }
         }
+
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, UpdateBookingRequest request, int currentUserId)

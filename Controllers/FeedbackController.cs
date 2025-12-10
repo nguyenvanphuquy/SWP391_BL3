@@ -17,7 +17,37 @@ namespace SWP391_BL3.Controllers
         [HttpPost]
         public IActionResult Create(FeedbackRequest req)
         {
-            return Ok(_feedbackService.Create(req));
+            try
+            {
+                var feedback = _feedbackService.Create(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Feedback thành công!",
+                    data = feedback
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Trả về message thân thiện hơn
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Bạn đã đánh giá phòng này rồi. Mỗi người chỉ được đánh giá 1 lần.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log error nếu cần
+                // _logger.LogError(ex, "Error creating feedback");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."
+                });
+            }
         }
 
         [HttpPut("{id}")]
@@ -53,6 +83,12 @@ namespace SWP391_BL3.Controllers
         public IActionResult GetByFacility(int facilityId)
         {
             return Ok(_feedbackService.GetByFacility(facilityId));
+        }
+        [HttpGet("feedbacklist")]
+        public IActionResult GetFeedbackList()
+        {
+            var feedbackList = _feedbackService.GetFeedbackList();
+            return Ok(feedbackList);
         }
     }
 }

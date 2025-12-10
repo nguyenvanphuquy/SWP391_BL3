@@ -2,7 +2,6 @@
 {
     public class BookingRequest
     {
-        public string BookingCode { get; set; }
         public DateOnly? BookingDate { get; set; }
         public string Purpose { get; set; }
         public int NumberOfMember { get; set; }

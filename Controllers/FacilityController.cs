@@ -61,6 +61,12 @@ namespace SWP391_BL3.Controllers
             var result = _facilityService.GetFacilityList();
             return Ok(result);
         }
+        [HttpGet("Detail/{facilityId}")]
+        public IActionResult GetFacilityDetail(int facilityId)
+        {
+            var result = _facilityService.GetFacilityDetail(facilityId);
+            return Ok(result);
+        }
     }
 
 }

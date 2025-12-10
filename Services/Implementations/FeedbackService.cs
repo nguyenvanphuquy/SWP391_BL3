@@ -15,6 +15,13 @@ namespace SWP391_BL3.Services.Implementations
         }
         public FeedbackResponse Create(FeedbackRequest request)
         {
+            var Feedback = _feedbackRepository.GetByUserAndFacility(request.UserId, request.FacilityId);
+
+            if (Feedback != null)
+            {
+                throw new InvalidOperationException("User đã feedback cho phòng này rồi. Mỗi user chỉ được feedback 1 lần.");
+            }
+
             var fb = new Feedback
             {
                 Comment = request.Comment,
@@ -67,6 +74,10 @@ namespace SWP391_BL3.Services.Implementations
                 UserFullName = fb.User?.FullName,
                 FacilityCode = fb.Facility?.FacilityCode
             };
+        }
+        public List<FeedbackListResponse> GetFeedbackList()
+        {
+            return _feedbackRepository.GetFeedbackList();
         }
     }
 }

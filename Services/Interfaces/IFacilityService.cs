@@ -11,5 +11,6 @@ namespace SWP391_BL3.Services.Interfaces
         FacilityResponse UpdateFacility(int id, FacilityRequest facilityRequestrequest);
         bool Delete(int id);
         List<FacilityListResponse> GetFacilityList();
+        FacilityDetailResponse GetFacilityDetail(int facilityId);
     }
 }

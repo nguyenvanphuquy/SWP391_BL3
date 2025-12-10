@@ -1,22 +1,25 @@
 ﻿using SWP391_BL3.Models.DTOs.Request;
 using SWP391_BL3.Models.DTOs.Response;
 using SWP391_BL3.Models.Entities;
-using SWP391_BL3.Services.Interfaces;
+using SWP391_BL3.Repositories.Implementations;
 using SWP391_BL3.Repositories.Interfaces;
+using SWP391_BL3.Services.Interfaces;
 namespace SWP391_BL3.Services.Implementations
 {
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly ISlotRepository _slotRepository;
-        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository)
+        private readonly IFacilityRepository _facilityRepository;
+        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository, IFacilityRepository facilityRepository)
         {
             _bookingRepository = bookingRepository;
             _slotRepository = slotRepository;
+            _facilityRepository = facilityRepository;
         }
         public BookingResponse CreateBooking(BookingRequest request)
         {
-            // Kiểm tra BookingDate phải >= ngày hiện tại
+            // Kiểm tra BookingDate phải >= hôm nay
             if (request.BookingDate < DateOnly.FromDateTime(DateTime.Now))
             {
                 throw new ArgumentException("Ngày đặt phòng phải từ hôm nay trở đi");
@@ -28,46 +31,84 @@ namespace SWP391_BL3.Services.Implementations
                 throw new ArgumentException($"Slot '{request.SlotNumber}' not found.");
             }
 
-            var existingBooking = _bookingRepository.GetAll()
-                          .FirstOrDefault(b => b.FacilityId == request.FacilityId
-                          && b.BookingDate == request.BookingDate
-                          && b.SlotId == slot.SlotId
-                          && b.Status != "Cancelled");
-
-            if (existingBooking != null)
+            var facility = _facilityRepository.GetById(request.FacilityId);
+            if (facility == null)
             {
-                throw new InvalidOperationException(
-                    $"Phòng '{request.FacilityId}' đã được đặt vào ngày {request.BookingDate:dd/MM/yyyy} " +
-                    $"cho slot '{request.SlotNumber}'. Vui lòng chọn slot hoặc ngày khác.");
+                throw new ArgumentException($"Facility '{request.FacilityId}' không tồn tại.");
             }
 
+            // Kiểm tra số lượng người
+            if (request.NumberOfMember > facility.Capacity)
+            {
+                throw new InvalidOperationException(
+                    $"Số lượng người {request.NumberOfMember} vượt quá sức chứa của phòng {facility.Capacity}.");
+            }
+
+            // ✅ SỬA: Kiểm tra tất cả booking xung đột (bao gồm Approved, Pending, Trùng)
+            var conflictingBookings = _bookingRepository.GetAll()
+                .Where(b => b.FacilityId == request.FacilityId
+                    && b.BookingDate == request.BookingDate
+                    && b.SlotId == slot.SlotId
+                    && b.Status != "Cancelled"  // Chỉ loại trừ booking đã hủy
+                    && b.Status != "Rejected")  // Và booking bị từ chối (nếu có)
+                .ToList();
+
+            bool hasConflict = conflictingBookings.Any();
+
+            // Nếu có booking đã được Approved, KHÔNG CHO ĐẶT
+            var hasApprovedBooking = conflictingBookings.Any(b => b.Status == "Approved");
+            if (hasApprovedBooking)
+            {
+                throw new InvalidOperationException(
+                    "Phòng này đã có lịch đặt được duyệt trong khung giờ này. Vui lòng chọn thời gian khác.");
+            }
+
+            // Tạo booking mới
             var booking = new Booking
             {
-                BookingCode = request.BookingCode,
                 BookingDate = request.BookingDate,
                 Purpose = request.Purpose,
                 NumberOfMenber = request.NumberOfMember,
                 UserId = request.UserId,
                 FacilityId = request.FacilityId,
                 SlotId = slot.SlotId,
-                Status = "Pending",
+                Status = hasConflict ? "Trùng" : "Pending",
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now
             };
 
-            var result = _bookingRepository.Create(booking);
-            result = _bookingRepository.GetById(result.BookingId);
+            var created = _bookingRepository.Create(booking);
+            created = _bookingRepository.GetById(created.BookingId);
+            created.BookingCode = "BK" + created.BookingId.ToString("D4");
+
+            // Cập nhật tất cả các booking xung đột thành "Trùng"
+            if (hasConflict)
+            {
+                foreach (var conflictingBooking in conflictingBookings)
+                {
+                    if (conflictingBooking.Status == "Pending")
+                    {
+                        conflictingBooking.Status = "Conflict";
+                        conflictingBooking.UpdateAt = DateTime.Now;
+                        _bookingRepository.Update(conflictingBooking);
+                    }
+                }
+            }
+
+            _bookingRepository.Update(created);
 
             return new BookingResponse
             {
-                BookingId = result.BookingId,
-                BookingCode = result.BookingCode,
-                BookingDate = result.BookingDate,
-                Purpose = result.Purpose,
-                NumberOfMember = result.NumberOfMenber,
-                Status = result.Status,
-                UserFullName = result.User.FullName,
-                FacilityCode = result.Facility.FacilityCode
+                BookingId = created.BookingId,
+                BookingCode = created.BookingCode,
+                BookingDate = created.BookingDate,
+                Purpose = created.Purpose,
+                NumberOfMember = created.NumberOfMenber,
+                Status = created.Status,
+                UserFullName = created.User?.FullName ?? string.Empty,
+                FacilityCode = created.Facility?.FacilityCode ?? string.Empty,
+                HasConflict = hasConflict,
+                ConflictingBookingCount = conflictingBookings.Count
             };
         }
         public BookingResponse UpdateBooking(int id, UpdateBookingRequest request, int currentUserId)

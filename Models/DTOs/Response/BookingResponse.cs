@@ -16,6 +16,8 @@
         public DateTime? ApprovedAt { get; set; }
         public string RejectionType { get; set; }
         public DateTime? UpdateAt { get; set; }
+        public bool HasConflict { get; set; }
+        public int ConflictingBookingCount { get; set; }
 
     }
 }

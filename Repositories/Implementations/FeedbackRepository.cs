@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SWP391_BL3.Data;
+using SWP391_BL3.Models.DTOs.Response;
 using SWP391_BL3.Models.Entities;
 using SWP391_BL3.Repositories.Interfaces;
 
@@ -18,7 +19,11 @@ namespace SWP391_BL3.Repositories.Implementations
             _context.SaveChanges();
             return fb;
         }
-
+        public Feedback GetByUserAndFacility(int userId, int facilityId)
+        {
+            return _context.Feedbacks
+                .FirstOrDefault(f => f.UserId == userId && f.FacilityId == facilityId);
+        }
         public Feedback Update(Feedback fb)
         {
             _context.Feedbacks.Update(fb);
@@ -59,6 +64,24 @@ namespace SWP391_BL3.Repositories.Implementations
                 .Include(x => x.Facility)
                 .Where(x => x.FacilityId == facilityId)
                 .ToList();
+        }
+        public List<FeedbackListResponse> GetFeedbackList()
+        {
+            var List =( from fb in _context.Feedbacks
+                        join u in _context.Users on fb.UserId equals u.UserId
+                        join f in _context.Facilities on fb.FacilityId equals f.FacilityId
+                        orderby fb.CreateAt descending
+                        select new FeedbackListResponse
+                        {
+                            FeedbackId = fb.FeedbackId,
+                            Comments = fb.Comment,
+                            Rating = fb.Rating,
+                            FullName = u.FullName,
+                            Email = u.Email,
+                            FacilityCode = f.FacilityCode,
+                            SubmittedAt = fb.CreateAt,
+                        }).ToList();
+            return List;
         }
     }
 }

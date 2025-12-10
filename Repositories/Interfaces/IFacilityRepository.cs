@@ -12,5 +12,7 @@ namespace SWP391_BL3.Repositories.Interfaces
         void Update(Facility facility);
         void Delete(Facility facility);
         List<FacilityListResponse> GetFacilityList();
+        List<FacilityListResponse> GetAllList();
+        FacilityDetailResponse GetFacilityDetail(int facilityId);
     }
 }

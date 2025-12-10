@@ -1,8 +1,9 @@
 ﻿using Microsoft.Build.Construction;
+using Microsoft.EntityFrameworkCore;
 using SWP391_BL3.Data;
+using SWP391_BL3.Models.DTOs.Response;
 using SWP391_BL3.Models.Entities;
 using SWP391_BL3.Repositories.Interfaces;
-using SWP391_BL3.Models.DTOs.Response;
 
 namespace SWP391_BL3.Repositories.Implementations
 {
@@ -59,6 +60,87 @@ namespace SWP391_BL3.Repositories.Implementations
                             TypeName = t.TypeName
                         }).ToList();
             return list;
+        }
+        public List<FacilityListResponse> GetAllList()
+        {
+            var list = (from f in _context.Facilities
+                        join c in _context.Campuses on f.CampusId equals c.CampusId
+                        join t in _context.FacilityTypes on f.TypeId equals t.TypeId
+                        select new FacilityListResponse
+                        {
+                            FacilityId = f.FacilityId,
+                            FacilityCode = f.FacilityCode,
+                            Capacity = f.Capacity,
+                            Floors = f.Floor,
+                            Equipment = f.Equipment,
+                            Status = f.Status,
+                            CampusName = c.CampusName,
+                            TypeName = t.TypeName
+                        }).ToList();
+            return list;
+        }
+        public FacilityDetailResponse GetFacilityDetail(int facilityId)
+        {
+            var result = _context.Facilities
+                .Where(f => f.FacilityId == facilityId)
+                .Select(f => new FacilityDetailResponse
+                {
+                    // ===== Facility =====
+                    FacilityId = f.FacilityId,
+                    FacilityCode = f.FacilityCode,
+                    Capacity = f.Capacity,
+                    Floor = f.Floor,
+                    Equipment = f.Equipment,
+                    Status = f.Status,
+
+                    // ===== Campus =====
+                    CampusId = f.Campus.CampusId,
+                    CampusName = f.Campus.CampusName,
+                    CampusAddress = f.Campus.Address,
+
+                    // ===== Facility Type =====
+                    TypeId = f.Type.TypeId,
+                    TypeName = f.Type.TypeName,
+                    TypeDescription = f.Type.Description,
+
+                    Slots = _context.Slots
+                            .FromSqlRaw(@"
+                                SELECT s.* 
+                                FROM Slot s  -- Đổi từ Slots thành Slot
+                                INNER JOIN Facility_Slot fs ON s.SlotId = fs.SlotId
+                                WHERE fs.FacilityId = {0}
+                            ", facilityId)
+                            .OrderBy(s => s.SlotNumber)
+                            .Select(s => new SlotItem
+                            {
+                                SlotId = s.SlotId,
+                                SlotNumber = s.SlotNumber,
+                                StartTime = s.StartTime,
+                                EndTime = s.EndTime
+                            })
+                            .ToList(),
+
+                    // ===== Feedback Summary =====
+                    AverageRating = f.Feedbacks.Any()
+                                    ? Convert.ToDecimal(Math.Round(f.Feedbacks.Average(x => (double?)x.Rating) ?? 0, 2))
+                                    : null,
+                    TotalFeedback = f.Feedbacks.Count(),
+
+                    RecentFeedback = f.Feedbacks
+                        .OrderByDescending(x => x.CreateAt)
+                        .Take(5)
+                        .Select(x => new FeedbackItem
+                        {
+                            UserName = x.User.FullName,
+                            Rating = x.Rating,
+                            Comment = x.Comment,
+                            CreateAt = x.CreateAt
+                        })
+                        .ToList()
+                })
+                .FirstOrDefault();
+
+            return result;
         }
     }
 }
