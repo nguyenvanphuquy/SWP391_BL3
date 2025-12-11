@@ -18,6 +18,8 @@
         public DateTime? UpdateAt { get; set; }
         public bool HasConflict { get; set; }
         public int ConflictingBookingCount { get; set; }
+        public int? SlotNumber { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
     }
 }

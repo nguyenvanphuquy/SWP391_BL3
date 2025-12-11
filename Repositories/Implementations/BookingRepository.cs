@@ -52,6 +52,65 @@ namespace SWP391_BL3.Repositories.Implementations
             _context.SaveChanges();
             return true;
         }
+        public List<Booking> GetBookingsByFacilityDateAndSlot(int facilityId, DateOnly bookingDate, int slotId)
+        {
+            return _context.Bookings
+                .Where(b => b.FacilityId == facilityId
+                    && b.BookingDate == bookingDate
+                    && b.SlotId == slotId
+                    && b.Status != "Cancelled"
+                    && b.Status != "Rejected")
+                .ToList();
+        }
+
+        public List<Booking> GetAllRelatedBookings(int? facilityId, DateOnly? bookingDate, int? slotId, int excludeBookingId)
+        {
+            return _context.Bookings
+                .Where(b => b.FacilityId == facilityId
+                    && b.BookingDate == bookingDate
+                    && b.SlotId == slotId
+                    && b.BookingId != excludeBookingId
+                    && b.Status != "Cancelled"
+                    && b.Status != "Rejected")
+                .ToList();
+        }
+
+        public Slot GetSlotByNumber(int slotNumber)
+        {
+            return _context.Slots.FirstOrDefault(s => s.SlotNumber == slotNumber);
+        }
+        public Booking GetByIdWithDetails(int id)
+        {
+            return _context.Bookings
+                .Include(b => b.User)          // Lấy thông tin User
+                .Include(b => b.Facility)      // Lấy thông tin Facility
+                .Include(b => b.Slot)          // Lấy thông tin Slot
+                .FirstOrDefault(b => b.BookingId == id);
+        }
+        public bool HasUserBookedInSlot(int userId, int facilityId, DateOnly bookingDate, int slotId)
+        {
+            return _context.Bookings
+                .Any(b => b.UserId == userId
+                    && b.FacilityId == facilityId
+                    && b.BookingDate == bookingDate
+                    && b.SlotId == slotId
+                    && b.Status != "Cancelled"  // Loại trừ đã hủy
+                    && b.Status != "Rejected"); // Loại trừ bị từ chối
+        }
+        public List<Booking> GetBookingsForFeedback(int userId, int facilityId, int maxDaysAgo = 30)
+        {
+            var minDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-maxDaysAgo));
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            return _context.Bookings
+                .Where(b => b.UserId == userId
+                    && b.FacilityId == facilityId
+                    && b.Status == "Approved" // Chỉ booking đã duyệt
+                    && b.BookingDate >= minDate // Trong vòng maxDaysAgo ngày
+                    && b.BookingDate <= today) // Đã diễn ra (hôm nay hoặc trước đó)
+                .OrderByDescending(b => b.BookingDate)
+                .ToList();
+        }
         public List<BookingListResponse> GetBookingList()
         {
             var List = (from b in _context.Bookings
@@ -105,8 +164,14 @@ namespace SWP391_BL3.Repositories.Implementations
             var list = (from b in _context.Bookings
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
+                        // Left join với Feedbacks: lấy feedback của user này cho facility này
+                        join fb in _context.Feedbacks
+                            on new { FacilityId = b.FacilityId, UserId = b.UserId }
+                            equals new { fb.FacilityId, fb.UserId }
+                            into fbGroup
+                        from fb in fbGroup.DefaultIfEmpty()
                         where b.UserId == userId
-                        orderby b.BookingDate descending , b.CreateAt descending
+                        orderby b.BookingDate descending, b.CreateAt descending
                         select new ListBookingUserResponse
                         {
                             BookingId = b.BookingId,
@@ -118,7 +183,13 @@ namespace SWP391_BL3.Repositories.Implementations
                             Endtime = sl.EndTime,
                             Purpose = b.Purpose,
                             Status = b.Status,
+
+                            // Thông tin feedback nếu có
+                            FeedbackId = fb != null ? fb.FeedbackId : 0,
+                            Comment = fb != null ? fb.Comment : string.Empty,
+                            Rating = fb != null ? fb.Rating : 0,
                         }).ToList();
+
             return list;
         }
         public BookingStatsResponse GetUserBookingStats(int userId)

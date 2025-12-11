@@ -10,9 +10,11 @@ namespace SWP391_BL3.Repositories.Interfaces
 
         Feedback Update(Feedback fb);
         bool Delete(int id);
+        Feedback GetByIdWithDetails(int id);
         Feedback GetById(int id);
         IEnumerable<Feedback> GetAll();
         IEnumerable<Feedback> GetByFacility(int facilityId);
         List<FeedbackListResponse> GetFeedbackList();
+        FeedbackDetailResponse GetFeedbackDetail(int feedbackId);
     }
 }

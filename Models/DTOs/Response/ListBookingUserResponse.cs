@@ -4,6 +4,9 @@
     {
         public int BookingId { get; set; }
         public string BookingCode { get; set; }
+        public int FeedbackId { get; set; }
+        public string Comment { get; set; }
+        public int? Rating { get; set; }
         public int FacilityId { get; set; }
         public string FacilityCode { get; set; }
         public DateOnly? BookingDate { get; set; }

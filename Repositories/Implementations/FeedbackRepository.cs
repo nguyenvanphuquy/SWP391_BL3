@@ -24,6 +24,13 @@ namespace SWP391_BL3.Repositories.Implementations
             return _context.Feedbacks
                 .FirstOrDefault(f => f.UserId == userId && f.FacilityId == facilityId);
         }
+        public Feedback GetByIdWithDetails(int id)
+        {
+            return _context.Feedbacks
+                .Include(f => f.User) 
+                .Include(f => f.Facility) 
+                .FirstOrDefault(f => f.FeedbackId == id);
+        }
         public Feedback Update(Feedback fb)
         {
             _context.Feedbacks.Update(fb);
@@ -82,6 +89,25 @@ namespace SWP391_BL3.Repositories.Implementations
                             SubmittedAt = fb.CreateAt,
                         }).ToList();
             return List;
+        }
+        public FeedbackDetailResponse GetFeedbackDetail(int feedbackId)
+        {
+            var detail = (from fb in _context.Feedbacks
+                          join u in _context.Users on fb.UserId equals u.UserId
+                          join f in _context.Facilities on fb.FacilityId equals f.FacilityId
+                          where fb.FeedbackId == feedbackId
+                          select new FeedbackDetailResponse
+                          {
+                              FeedbackId = fb.FeedbackId,
+                              Comments = fb.Comment,
+                              Rating = fb.Rating,
+                              FullName = u.FullName,
+                              Email = u.Email,
+                              FacilityCode = f.FacilityCode,
+                              TypeName = f.Type.TypeName,
+                              CreatedAt = fb.CreateAt,
+                          }).FirstOrDefault();
+            return detail;
         }
     }
 }

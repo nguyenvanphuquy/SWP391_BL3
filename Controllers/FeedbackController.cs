@@ -90,6 +90,24 @@ namespace SWP391_BL3.Controllers
             var feedbackList = _feedbackService.GetFeedbackList();
             return Ok(feedbackList);
         }
+        [HttpGet("feedbackdetail/{feedbackId}")]
+        public IActionResult GetFeedbackDetail(int feedbackId)
+        {
+            var feedbackDetail = _feedbackService.GetFeedbackDetail(feedbackId);
+            if (feedbackDetail == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Feedback not found."
+                });
+            }
+            return Ok(new
+            {
+                success = true,
+                data = feedbackDetail
+            });
+        }
     }
 }
 

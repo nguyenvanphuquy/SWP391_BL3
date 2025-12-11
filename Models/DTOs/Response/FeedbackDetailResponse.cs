@@ -7,7 +7,7 @@
         public string Email { get; set; }
         public string FacilityCode{ get; set; }
         public string TypeName { get; set; }
-        public int Rating { get; set; }
+        public int? Rating { get; set; }
         public string Comments { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
