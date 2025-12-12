@@ -14,12 +14,14 @@ namespace SWP391_BL3.Services.Implementations
         private readonly ISlotRepository _slotRepository;
         private readonly IFacilityRepository _facilityRepository;
         private readonly FptBookingContext _context;
-        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository, IFacilityRepository facilityRepository, FptBookingContext context)
+        private readonly INotificationRepository _notificationRepository;
+        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository, IFacilityRepository facilityRepository, FptBookingContext context, INotificationRepository notificationRepository)
         {
             _bookingRepository = bookingRepository;
             _slotRepository = slotRepository;
             _facilityRepository = facilityRepository;
             _context = context;
+            _notificationRepository = notificationRepository;
         }
         public BookingResponse CreateBooking(BookingRequest request)
         {
@@ -114,7 +116,17 @@ namespace SWP391_BL3.Services.Implementations
                         }
                     }
                 }
+                var noti = new Notification
+                {
+                    Title = "Đặt phòng thành công, chờ duyệt",
+                    Message = $"Bạn đã đặt phòng {created.Facility?.FacilityCode} vào ngày {created.BookingDate} - Slot {slot.SlotNumber}",
+                    Status = "Unread",
+                    Date = DateTime.Now,
+                    UserId = created.UserId,
+                    BookingId = created.BookingId
+                };
 
+                _notificationRepository.Add(noti);
                 // 6. COMMIT TRANSACTION
                 transaction.Commit();
 
@@ -175,6 +187,16 @@ namespace SWP391_BL3.Services.Implementations
                         booking.ApprovedByUserId = currentUserId;
                         booking.ApprovedAt = DateTime.Now;
                         booking.RejectionReason = null;
+
+                        _notificationRepository.Add(new Notification
+                        {
+                            Title = "Đặt phòng đã được duyệt",
+                            Message = $"Booking #{booking.BookingCode} của bạn đã được duyệt.",
+                            Status = "Unread",
+                            Date = DateTime.Now,
+                            UserId = booking.UserId,
+                            BookingId = booking.BookingId
+                        });
                     }
                     else if (request.Status == "Rejected")
                     {
@@ -188,6 +210,16 @@ namespace SWP391_BL3.Services.Implementations
                         booking.RejectionReason = request.RejectionReason;
                         booking.ApprovedByUserId = currentUserId;
                         booking.ApprovedAt = DateTime.Now;
+                        _notificationRepository.Add(new Notification
+                        {
+                            Title = "Đặt phòng bị từ chối",
+                            Message = $"Booking #{booking.BookingCode} bị từ chối. Lý do: {request.RejectionReason}",
+                            Status = "Unread",
+                            Date = DateTime.Now,
+                            UserId = booking.UserId,
+                            BookingId = booking.BookingId
+                        });
+
                     }
                     else
                     {
@@ -219,6 +251,16 @@ namespace SWP391_BL3.Services.Implementations
                             conflictedBooking.UpdateAt = DateTime.Now;
 
                             _bookingRepository.Update(conflictedBooking);
+                            _notificationRepository.Add(new Notification
+                            {
+                                Title = "Đặt phòng bị từ chối do xung đột",
+                                Message = $"Booking #{conflictedBooking.BookingCode} bị tự động từ chối vì booking #{booking.BookingCode} đã được duyệt.",
+                                Status = "Unread",
+                                Date = DateTime.Now,
+                                UserId = conflictedBooking.UserId,
+                                BookingId = conflictedBooking.BookingId
+                            });
+
                         }
                     }
                     else if (request.Status == "Rejected")

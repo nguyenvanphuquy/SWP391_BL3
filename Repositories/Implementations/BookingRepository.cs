@@ -117,7 +117,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         join u in _context.Users on b.UserId equals u.UserId
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
-                        orderby b.BookingDate descending , b.CreateAt descending
+                        orderby  b.CreateAt descending
                         select new BookingListResponse
                         {
                             BookingId = b.BookingId,
@@ -171,7 +171,7 @@ namespace SWP391_BL3.Repositories.Implementations
                             into fbGroup
                         from fb in fbGroup.DefaultIfEmpty()
                         where b.UserId == userId
-                        orderby b.BookingDate descending, b.CreateAt descending
+                        orderby  b.CreateAt descending
                         select new ListBookingUserResponse
                         {
                             BookingId = b.BookingId,

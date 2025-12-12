@@ -42,15 +42,13 @@ public partial class FptBookingContext : DbContext
     {
         modelBuilder.Entity<Booking>(entity =>
         {
-            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951AED0B9E6963");
+            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951AEDD722307D");
 
             entity.ToTable("Booking");
 
             entity.Property(e => e.ApprovedAt).HasColumnType("datetime");
             entity.Property(e => e.BookingCode).HasMaxLength(100);
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Purpose).HasColumnType("text");
-            entity.Property(e => e.RejectionReason).HasColumnType("text");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
@@ -73,7 +71,7 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Campus>(entity =>
         {
-            entity.HasKey(e => e.CampusId).HasName("PK__Campus__FD598DD6185FAEE8");
+            entity.HasKey(e => e.CampusId).HasName("PK__Campus__FD598DD67E954D1A");
 
             entity.ToTable("Campus");
 
@@ -86,12 +84,11 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Facility>(entity =>
         {
-            entity.HasKey(e => e.FacilityId).HasName("PK__Facility__5FB08A740E25C832");
+            entity.HasKey(e => e.FacilityId).HasName("PK__Facility__5FB08A74086108EA");
 
             entity.ToTable("Facility");
 
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Equipment).HasColumnType("text");
             entity.Property(e => e.FacilityCode).HasMaxLength(100);
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
@@ -117,29 +114,27 @@ public partial class FptBookingContext : DbContext
                         .HasConstraintName("FK__Facility___Facil__4F7CD00D"),
                     j =>
                     {
-                        j.HasKey("FacilityId", "SlotId").HasName("PK__Facility__BF11AEDE38E2B3EA");
+                        j.HasKey("FacilityId", "SlotId").HasName("PK__Facility__BF11AEDE769C41D0");
                         j.ToTable("Facility_Slot");
                     });
         });
 
         modelBuilder.Entity<FacilityType>(entity =>
         {
-            entity.HasKey(e => e.TypeId).HasName("PK__Facility__516F03B5BC52CFC3");
+            entity.HasKey(e => e.TypeId).HasName("PK__Facility__516F03B51A9AAE01");
 
             entity.ToTable("Facility_Type");
 
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.TypeName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD6A481D311");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD6968F6C93");
 
             entity.ToTable("Feedback");
 
-            entity.Property(e => e.Comment).HasColumnType("text");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Facility).WithMany(p => p.Feedbacks)
@@ -153,12 +148,11 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E1251B1B7EC");
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E122DD9292E");
 
             entity.ToTable("Notification");
 
             entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.Message).HasColumnType("text");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -175,25 +169,23 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE1A835A5003");
+            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE1A8FDC21F9");
 
-            entity.Property(e => e.RoleName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.RoleName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Slot>(entity =>
         {
-            entity.HasKey(e => e.SlotId).HasName("PK__Slot__0A124AAF7B4E074D");
+            entity.HasKey(e => e.SlotId).HasName("PK__Slot__0A124AAF53FA522C");
 
             entity.ToTable("Slot");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C079A77F4");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C991B8A68");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053495E68208").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534204EF9A5").IsUnique();
 
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(200);
