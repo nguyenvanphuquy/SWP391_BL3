@@ -396,7 +396,7 @@ namespace SWP391_BL3.Services.Implementations
         }
         public BookingResponse CheckIn(int bookingId)
         {
-            var booking = _bookingRepository.GetById(bookingId);
+            var booking = _bookingRepository.GetBookingById(bookingId);
             if (booking == null)
             {
                 throw new ArgumentException("Lịch đặt không tồn tại");
@@ -409,9 +409,12 @@ namespace SWP391_BL3.Services.Implementations
             {
                 throw new InvalidOperationException("Chỉ có thể check-in vào ngày đặt phòng");
             }
-            var startTime = booking.Slot?.StartTime;
-            var endTime = booking.Slot?.EndTime;
-            var timeNow = TimeOnly.Parse(DateTime.Now.ToString("HH:mm"));
+            if (booking.Slot == null)
+                throw new InvalidOperationException("Lịch đặt chưa có slot thời gian");
+
+            var startTime = booking.Slot.StartTime;
+            var endTime = booking.Slot.EndTime;
+            var timeNow = TimeOnly.FromDateTime(DateTime.Now);
             if (timeNow < startTime || timeNow > endTime)
             {
                 throw new InvalidOperationException("Chỉ có thể check-in trong khung giờ đã đặt phòng");
@@ -433,7 +436,7 @@ namespace SWP391_BL3.Services.Implementations
         }
         public BookingResponse CheckOut(int bookingId)
         {
-            var booking = _bookingRepository.GetById(bookingId);
+            var booking = _bookingRepository.GetBookingById(bookingId);
             if (booking == null)
             {
                 throw new ArgumentException("Lịch đặt không tồn tại");

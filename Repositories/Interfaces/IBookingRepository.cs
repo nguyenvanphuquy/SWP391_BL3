@@ -8,6 +8,7 @@ namespace SWP391_BL3.Repositories.Interfaces
         Booking Create(Booking booking);
         Booking Update(Booking booking);
         Booking GetById(int id);
+        Booking GetBookingById(int id);
         IEnumerable<Booking> GetAll();
         bool Delete(int id);
         List<Booking> GetBookingsByFacilityDateAndSlot(int facilityId, DateOnly bookingDate, int slotId);

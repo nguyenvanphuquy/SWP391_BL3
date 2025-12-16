@@ -28,9 +28,9 @@ namespace SWP391_BL3.Controllers
         [HttpPost("google-login")]
         public IActionResult GoogleLogin([FromBody] GoogleLoginRequest request)
         {
-            if (string.IsNullOrEmpty(request.IdToken))
+            if (request == null || string.IsNullOrEmpty(request.IdToken))
             {
-                return BadRequest(new { message = "ID Token không được để trống" });
+                return Unauthorized(new { message = "IdToken không hợp lệ" });
             }
 
             var result = _userService.GoogleLogin(request.IdToken);

@@ -34,7 +34,14 @@ namespace SWP391_BL3.Repositories.Implementations
                 .Include(b => b.Facility)
                 .FirstOrDefault(b => b.BookingId == id);
         }
-
+        public Booking GetBookingById(int id)
+        {
+            return _context.Bookings
+                .Include(b => b.Slot)
+                .Include(b => b.User)
+                .Include(b => b.Facility)
+                .FirstOrDefault(b => b.BookingId == id);
+        }
         public IEnumerable<Booking> GetAll()
         {
             return _context.Bookings

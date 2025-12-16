@@ -16,20 +16,27 @@ var builder = WebApplication.CreateBuilder(args);
 var secretKey = builder.Configuration["JwtSettings:SecretKey"];
 var issuer = builder.Configuration["JwtSettings:Issuer"];
 var audience = builder.Configuration["JwtSettings:Audience"];
-// Add services to the container.
 
+// Add services to the container.
 builder.Services.AddControllers();
+
+// ? FIX CORS - Thêm c? localhost:5173 (Vite) và localhost:8080
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy
-            .WithOrigins("http://localhost:8080")
+            .WithOrigins(
+                "http://localhost:5173",  // ? Vite dev server
+                "http://localhost:8080",  // ? Production/other port
+                "http://localhost:3000"   // ? Create React App (n?u c?n)
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
 });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -65,8 +72,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 builder.Services.AddDbContext<FptBookingContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("FptBookingContext")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFacilityTypeRepository, FacilityTypeRepository>();
@@ -88,8 +97,8 @@ builder.Services.AddSignalR();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton<JwtSettings>(builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>());
 builder.Services.AddScoped<JwtTokenGenerator>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -105,8 +114,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-var app = builder.Build();
 
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -117,7 +126,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+
+// ? IMPORTANT: UseCors PH?I ??t TR??C UseAuthentication và UseAuthorization
+app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+//// ? Map SignalR Hub v?i CORS
+//app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowReactApp");
+
 app.Run();
