@@ -11,5 +11,6 @@ namespace SWP391_BL3.Services.Interfaces
         IEnumerable<UserInforResponse> GetAllInfor();
         UserResponse Create(UserRequest request);
         bool Delete(int id);
+        LoginResponse? GoogleLogin(string idToken);
     }
 }

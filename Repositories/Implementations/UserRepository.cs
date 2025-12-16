@@ -47,5 +47,9 @@ namespace SWP391_BL3.Repositories.Implementations
                 _context.SaveChanges();
             }
         }
+        public User? GetByGoogleId(string googleId)
+        {
+            return _context.Users.FirstOrDefault(u => u.GoogleId == googleId);
+        }
     }
 }

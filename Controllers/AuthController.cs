@@ -25,6 +25,23 @@ namespace SWP391_BL3.Controllers
 
             return Ok(response);
         }
+        [HttpPost("google-login")]
+        public IActionResult GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            if (string.IsNullOrEmpty(request.IdToken))
+            {
+                return BadRequest(new { message = "ID Token không được để trống" });
+            }
+
+            var result = _userService.GoogleLogin(request.IdToken);
+
+            if (result == null)
+            {
+                return Unauthorized(new { message = "Đăng nhập thất bại hoặc tài khoản bị khóa" });
+            }
+
+            return Ok(result);
+        }
 
     }
 }

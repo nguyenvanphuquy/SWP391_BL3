@@ -12,5 +12,6 @@ namespace SWP391_BL3.Repositories.Interfaces
         void Update(User user);
         void Delete(int id);
         void UpdateStatus(int id, string status);
+        User? GetByGoogleId(string googleId);
     }
 }

@@ -21,6 +21,8 @@ public partial class User
 
     public DateTime? UpdateAt { get; set; }
 
+    public string? GoogleId { get; set; }
+
     public int? RoleId { get; set; }
 
     public virtual ICollection<Booking> BookingApprovedByUsers { get; set; } = new List<Booking>();

@@ -13,19 +13,20 @@ namespace SWP391_BL3.Services.Implementations
         public List<NotificationResponse> GetUserNotifications(int userId)
         {
             var notifications = _notificationRepository.GetByUserId(userId);
-
-            return notifications.Select(n => new NotificationResponse
-            {
-                NotificationId = n.NotificationId,
-                Title = n.Title,
-                Message = n.Message,
-                Status = n.Status,
-                Date = n.Date,
-                UserId = n.UserId,
-                BookingId = n.BookingId,
-                BookingCode = n.Booking?.BookingCode,
-                UserFullName = n.User?.FullName
-            }).ToList();
+            return notifications
+                .OrderByDescending(n => n.Date)
+                .Select(n => new NotificationResponse
+                {
+                    NotificationId = n.NotificationId,
+                    Title = n.Title,
+                    Message = n.Message,
+                    Status = n.Status,
+                    Date = n.Date,
+                    UserId = n.UserId,
+                    BookingId = n.BookingId,
+                    BookingCode = n.Booking?.BookingCode,
+                    UserFullName = n.User?.FullName
+                }).ToList();
         }
 
         public List<NotificationResponse> GetUnreadNotifications(int userId)
