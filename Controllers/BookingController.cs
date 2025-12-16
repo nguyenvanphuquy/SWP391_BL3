@@ -102,6 +102,27 @@ namespace SWP391_BL3.Controllers
             var result = _bookingService.GetUserBookingStats(userId);
             return Ok(result);
         }
+        [HttpPost("CheckIn/{bookingId}")]
+        public IActionResult CheckIn(int bookingId)
+        {
+            var result = _bookingService.CheckIn(bookingId);
+            if (result == null) return NotFound("Booking not found");
+            return Ok(result);
+        }
+        [HttpPost("CheckOut/{bookingId}")]
+        public IActionResult CheckOut(int bookingId)
+        {
+            var result = _bookingService.CheckOut(bookingId);
+            if (result == null) return NotFound("Booking not found");
+            return Ok(result);
+        }
+        [HttpPost("Cancel/{bookingId}")]
+        public IActionResult Cancel(int bookingId)
+        {
+            var result = _bookingService.Cancel(bookingId);
+            if (result == null) return NotFound("Booking not found");
+            return Ok(result);
+        }
     }
 }
 

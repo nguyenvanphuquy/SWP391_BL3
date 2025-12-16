@@ -14,5 +14,8 @@ namespace SWP391_BL3.Services.Interfaces
         BookingDetailResponse GetBookingDetail(int bookingId);
         List<ListBookingUserResponse> GetListBookingUsers(int userId);
         BookingStatsResponse GetUserBookingStats(int userId);
+        BookingResponse CheckIn(int bookingId);
+        BookingResponse CheckOut(int bookingId);
+        BookingResponse Cancel(int bookingId);
     }
 }

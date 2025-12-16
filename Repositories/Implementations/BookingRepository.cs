@@ -105,7 +105,7 @@ namespace SWP391_BL3.Repositories.Implementations
             return _context.Bookings
                 .Where(b => b.UserId == userId
                     && b.FacilityId == facilityId
-                    && b.Status == "Approved" // Chỉ booking đã duyệt
+                    && b.Status == "CheckOut" // Chỉ booking đã duyệt
                     && b.BookingDate >= minDate // Trong vòng maxDaysAgo ngày
                     && b.BookingDate <= today) // Đã diễn ra (hôm nay hoặc trước đó)
                 .OrderByDescending(b => b.BookingDate)

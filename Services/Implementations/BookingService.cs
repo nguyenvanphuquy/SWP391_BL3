@@ -6,6 +6,7 @@ using SWP391_BL3.Repositories.Implementations;
 using SWP391_BL3.Repositories.Interfaces;
 using SWP391_BL3.Services.Interfaces;
 using SWP391_BL3.Data;
+using System.Diagnostics.CodeAnalysis;
 namespace SWP391_BL3.Services.Implementations
 {
     public class BookingService : IBookingService
@@ -392,6 +393,101 @@ namespace SWP391_BL3.Services.Implementations
         public BookingStatsResponse GetUserBookingStats(int userId)
         {
             return _bookingRepository.GetUserBookingStats(userId);
+        }
+        public BookingResponse CheckIn(int bookingId)
+        {
+            var booking = _bookingRepository.GetById(bookingId);
+            if (booking == null)
+            {
+                throw new ArgumentException("Lịch đặt không tồn tại");
+            }
+            if (booking.Status != "Approved")
+            {
+                throw new InvalidOperationException("Chỉ có thể check-in cho các lịch đặt đã được duyệt");
+            }
+            if (booking.BookingDate != DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new InvalidOperationException("Chỉ có thể check-in vào ngày đặt phòng");
+            }
+            var startTime = booking.Slot?.StartTime;
+            var endTime = booking.Slot?.EndTime;
+            var timeNow = TimeOnly.Parse(DateTime.Now.ToString("HH:mm"));
+            if (timeNow < startTime || timeNow > endTime)
+            {
+                throw new InvalidOperationException("Chỉ có thể check-in trong khung giờ đã đặt phòng");
+            }
+            booking.Status = "CheckedIn";
+            booking.UpdateAt = DateTime.Now;
+            _bookingRepository.Update(booking);
+            return new BookingResponse
+            {
+                BookingId = booking.BookingId,
+                BookingCode = booking.BookingCode,
+                BookingDate = booking.BookingDate,
+                Purpose = booking.Purpose,
+                NumberOfMember = booking.NumberOfMenber,
+                Status = booking.Status,
+                UserFullName = booking.User.FullName,
+                FacilityCode = booking.Facility.FacilityCode
+            };
+        }
+        public BookingResponse CheckOut(int bookingId)
+        {
+            var booking = _bookingRepository.GetById(bookingId);
+            if (booking == null)
+            {
+                throw new ArgumentException("Lịch đặt không tồn tại");
+            }
+            if (booking.Status != "CheckedIn")
+            {
+                throw new InvalidOperationException("Chỉ có thể check-out cho các lịch đặt đã được check-in");
+            }
+            var endTime = booking.Slot?.EndTime;
+            var timeNow = TimeOnly.Parse(DateTime.Now.ToString("HH:mm"));
+            if (timeNow < endTime)
+            {
+                throw new InvalidOperationException("Chỉ có thể check-out sau khi kết thúc thời gian đã đặt phòng");
+            }
+            booking.Status = "CheckOut";
+            booking.UpdateAt = DateTime.Now;
+            _bookingRepository.Update(booking);
+            return new BookingResponse
+            {
+                BookingId = booking.BookingId,
+                BookingCode = booking.BookingCode,
+                BookingDate = booking.BookingDate,
+                Purpose = booking.Purpose,
+                NumberOfMember = booking.NumberOfMenber,
+                Status = booking.Status,
+                UserFullName = booking.User.FullName,
+                FacilityCode = booking.Facility.FacilityCode
+            };
+        }
+        public BookingResponse Cancel(int bookingId)
+        {
+            var booking = _bookingRepository.GetById(bookingId);
+            if (booking == null)
+            {
+                throw new ArgumentException("Lịch đặt không tồn tại");
+            }
+            if (booking.Status != "Approved" && booking.Status != "Pending" && booking.Status != "Conflict")
+            {
+                throw new InvalidOperationException("Chỉ có thể hủy các lịch đặt đang ở trạng thái Approved, Pending hoặc Conflict");
+            }
+            booking.Status = "Cancelled";
+            booking.UpdateAt = DateTime.Now;
+            _bookingRepository.Update(booking);
+            return new BookingResponse
+            {
+                BookingId = booking.BookingId,
+                BookingCode = booking.BookingCode,
+                BookingDate = booking.BookingDate,
+                Purpose = booking.Purpose,
+                NumberOfMember = booking.NumberOfMenber,
+                Status = booking.Status,
+                UserFullName = booking.User.FullName,
+                FacilityCode = booking.Facility.FacilityCode
+            };
         }
     }
 }
