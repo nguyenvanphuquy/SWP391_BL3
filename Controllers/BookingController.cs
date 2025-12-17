@@ -103,18 +103,54 @@ namespace SWP391_BL3.Controllers
             return Ok(result);
         }
         [HttpPost("CheckIn/{bookingId}")]
-        public IActionResult CheckIn(int bookingId)
+        public IActionResult CheckIn(
+            int bookingId,
+            [FromBody] CheckInOutRequest request)
         {
-            var result = _bookingService.CheckIn(bookingId);
-            if (result == null) return NotFound("Booking not found");
-            return Ok(result);
+            if (bookingId != request.BookingId)
+                return BadRequest("BookingId không khớp");
+
+            if (request.ImageUrls == null || !request.ImageUrls.Any())
+                return BadRequest("Phải có ít nhất 1 hình ảnh");
+
+            try
+            {
+                var result = _bookingService.CheckIn(request);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpPost("CheckOut/{bookingId}")]
-        public IActionResult CheckOut(int bookingId)
+        public IActionResult CheckOut(
+            int bookingId,
+            [FromBody] CheckInOutRequest request)
         {
-            var result = _bookingService.CheckOut(bookingId);
-            if (result == null) return NotFound("Booking not found");
-            return Ok(result);
+            if (bookingId != request.BookingId)
+                return BadRequest("BookingId không khớp");
+
+            if (request.ImageUrls == null || !request.ImageUrls.Any())
+                return BadRequest("Phải có ít nhất 1 hình ảnh");
+
+            try
+            {
+                var result = _bookingService.CheckOut(request);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpPost("Cancel/{bookingId}")]
         public IActionResult Cancel(int bookingId)

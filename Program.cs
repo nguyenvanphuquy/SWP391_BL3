@@ -1,4 +1,4 @@
-using BE_SWP391.Repositories.Interfaces;
+﻿using BE_SWP391.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,16 +20,16 @@ var audience = builder.Configuration["JwtSettings:Audience"];
 // Add services to the container.
 builder.Services.AddControllers();
 
-// ? FIX CORS - Th�m c? localhost:5173 (Vite) v� localhost:8080
+// ✅ FIX CORS - Thêm cả localhost:5173 (Vite) và localhost:8080
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5173",  // ? Vite dev server
-                "http://localhost:8080",  // ? Production/other port
-                "http://localhost:3000"   // ? Create React App (n?u c?n)
+                "http://localhost:5173",  // ← Vite dev server
+                "http://localhost:8080",  // ← Production/other port
+                "http://localhost:3000"   // ← Create React App (nếu cần)
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -92,6 +92,8 @@ builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ISlotRepository, SlotRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICheckinRepository, CheckinRepository>();
+builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 
 builder.Services.AddSignalR();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -127,14 +129,14 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 
-// ? IMPORTANT: UseCors PH?I ??t TR??C UseAuthentication v� UseAuthorization
+// ✅ IMPORTANT: UseCors PHẢI đặt TRƯỚC UseAuthentication và UseAuthorization
 app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-//// ? Map SignalR Hub v?i CORS
+//// ✅ Map SignalR Hub với CORS
 //app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowReactApp");
 
 app.Run();

@@ -20,6 +20,10 @@ public partial class FptBookingContext : DbContext
 
     public virtual DbSet<Campus> Campuses { get; set; }
 
+    public virtual DbSet<Checkin> Checkins { get; set; }
+
+    public virtual DbSet<Checkout> Checkouts { get; set; }
+
     public virtual DbSet<Facility> Facilities { get; set; }
 
     public virtual DbSet<FacilityType> FacilityTypes { get; set; }
@@ -42,7 +46,7 @@ public partial class FptBookingContext : DbContext
     {
         modelBuilder.Entity<Booking>(entity =>
         {
-            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951AED43A7FD58");
+            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951AED2924C189");
 
             entity.ToTable("Booking");
 
@@ -71,7 +75,7 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Campus>(entity =>
         {
-            entity.HasKey(e => e.CampusId).HasName("PK__Campus__FD598DD6AEA8813E");
+            entity.HasKey(e => e.CampusId).HasName("PK__Campus__FD598DD631F89571");
 
             entity.ToTable("Campus");
 
@@ -82,9 +86,37 @@ public partial class FptBookingContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Checkin>(entity =>
+        {
+            entity.HasKey(e => e.CheckinId).HasName("PK__Checkin__F3C85D7156A07C46");
+
+            entity.ToTable("Checkin");
+
+            entity.Property(e => e.Comment).HasMaxLength(255);
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.Checkins)
+                .HasForeignKey(d => d.BookingId)
+                .HasConstraintName("FK__Checkin__Booking__619B8048");
+        });
+
+        modelBuilder.Entity<Checkout>(entity =>
+        {
+            entity.HasKey(e => e.CheckoutId).HasName("PK__Checkout__E07EF5FC622CC3E0");
+
+            entity.ToTable("Checkout");
+
+            entity.Property(e => e.Comment).HasMaxLength(255);
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.Checkouts)
+                .HasForeignKey(d => d.BookingId)
+                .HasConstraintName("FK__Checkout__Bookin__6477ECF3");
+        });
+
         modelBuilder.Entity<Facility>(entity =>
         {
-            entity.HasKey(e => e.FacilityId).HasName("PK__Facility__5FB08A74C572CD5A");
+            entity.HasKey(e => e.FacilityId).HasName("PK__Facility__5FB08A74AA39BE93");
 
             entity.ToTable("Facility");
 
@@ -114,14 +146,14 @@ public partial class FptBookingContext : DbContext
                         .HasConstraintName("FK__Facility___Facil__4F7CD00D"),
                     j =>
                     {
-                        j.HasKey("FacilityId", "SlotId").HasName("PK__Facility__BF11AEDE11B15BA1");
+                        j.HasKey("FacilityId", "SlotId").HasName("PK__Facility__BF11AEDE30B75E21");
                         j.ToTable("Facility_Slot");
                     });
         });
 
         modelBuilder.Entity<FacilityType>(entity =>
         {
-            entity.HasKey(e => e.TypeId).HasName("PK__Facility__516F03B5A64D8EE8");
+            entity.HasKey(e => e.TypeId).HasName("PK__Facility__516F03B5A1AE28FD");
 
             entity.ToTable("Facility_Type");
 
@@ -131,7 +163,7 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD68BBCF759");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD6B10C77C5");
 
             entity.ToTable("Feedback");
 
@@ -148,7 +180,7 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12FCF8650E");
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12F7929105");
 
             entity.ToTable("Notification");
 
@@ -169,23 +201,23 @@ public partial class FptBookingContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE1AAE96787A");
+            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE1ABFEB239A");
 
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Slot>(entity =>
         {
-            entity.HasKey(e => e.SlotId).HasName("PK__Slot__0A124AAF8768C3A7");
+            entity.HasKey(e => e.SlotId).HasName("PK__Slot__0A124AAFEFA59FE3");
 
             entity.ToTable("Slot");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4CC4F1AB41");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C6B027781");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534E906E573").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534B9794374").IsUnique();
 
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(200);

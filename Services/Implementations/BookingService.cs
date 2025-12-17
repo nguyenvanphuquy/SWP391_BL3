@@ -16,13 +16,17 @@ namespace SWP391_BL3.Services.Implementations
         private readonly IFacilityRepository _facilityRepository;
         private readonly FptBookingContext _context;
         private readonly INotificationRepository _notificationRepository;
-        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository, IFacilityRepository facilityRepository, FptBookingContext context, INotificationRepository notificationRepository)
+        private readonly ICheckinRepository _checkinRepository;
+        private readonly ICheckoutRepository _checkoutRepository;
+        public BookingService(IBookingRepository bookingRepository, ISlotRepository slotRepository, IFacilityRepository facilityRepository, FptBookingContext context, INotificationRepository notificationRepository, ICheckinRepository checkinRepository, ICheckoutRepository checkoutRepository)
         {
             _bookingRepository = bookingRepository;
             _slotRepository = slotRepository;
             _facilityRepository = facilityRepository;
             _context = context;
             _notificationRepository = notificationRepository;
+            _checkinRepository = checkinRepository;
+            _checkoutRepository = checkoutRepository;
         }
         public BookingResponse CreateBooking(BookingRequest request)
         {
@@ -394,34 +398,45 @@ namespace SWP391_BL3.Services.Implementations
         {
             return _bookingRepository.GetUserBookingStats(userId);
         }
-        public BookingResponse CheckIn(int bookingId)
+        public BookingResponse CheckIn(CheckInOutRequest request)
         {
-            var booking = _bookingRepository.GetBookingById(bookingId);
-            if (booking == null)
-            {
-                throw new ArgumentException("Lịch đặt không tồn tại");
-            }
-            if (booking.Status != "Approved")
-            {
-                throw new InvalidOperationException("Chỉ có thể check-in cho các lịch đặt đã được duyệt");
-            }
-            if (booking.BookingDate != DateOnly.FromDateTime(DateTime.Now))
-            {
-                throw new InvalidOperationException("Chỉ có thể check-in vào ngày đặt phòng");
-            }
-            if (booking.Slot == null)
-                throw new InvalidOperationException("Lịch đặt chưa có slot thời gian");
+            var booking = _bookingRepository.GetBookingById(request.BookingId);
 
-            var startTime = booking.Slot.StartTime;
-            var endTime = booking.Slot.EndTime;
-            var timeNow = TimeOnly.FromDateTime(DateTime.Now);
-            if (timeNow < startTime || timeNow > endTime)
+            if (booking == null)
+                throw new ArgumentException("Lịch đặt không tồn tại");
+
+            if (booking.Status != "Approved")
+                throw new InvalidOperationException("Chỉ có thể check-in cho lịch đã được duyệt");
+
+            if (booking.BookingDate != DateOnly.FromDateTime(DateTime.Now))
+                throw new InvalidOperationException("Chỉ được check-in đúng ngày đặt");
+
+            if (booking.Slot == null)
+                throw new InvalidOperationException("Lịch đặt chưa có slot");
+
+            var now = TimeOnly.FromDateTime(DateTime.Now);
+            if (now < booking.Slot.StartTime || now > booking.Slot.EndTime)
+                throw new InvalidOperationException("Không nằm trong khung giờ đặt");
+
+            // ❌ chặn check-in nhiều lần
+            if (_checkinRepository.ExistsByBookingId(booking.BookingId))
+                throw new InvalidOperationException("Lịch đặt đã được check-in");
+
+            // ✅ tạo record check-in
+            var checkins = request.ImageUrls.Select(img => new Checkin
             {
-                throw new InvalidOperationException("Chỉ có thể check-in trong khung giờ đã đặt phòng");
-            }
+                BookingId = booking.BookingId,
+                ImageUrl = img,
+                Comment = request.Comment,
+                CreateAt = DateTime.Now
+            }).ToList();
+
+            _checkinRepository.AddRange(checkins);
+
             booking.Status = "CheckedIn";
             booking.UpdateAt = DateTime.Now;
             _bookingRepository.Update(booking);
+
             return new BookingResponse
             {
                 BookingId = booking.BookingId,
@@ -434,24 +449,38 @@ namespace SWP391_BL3.Services.Implementations
                 FacilityCode = booking.Facility.FacilityCode
             };
         }
-        public BookingResponse CheckOut(int bookingId)
+        public BookingResponse CheckOut(CheckInOutRequest request)
         {
-            var booking = _bookingRepository.GetBookingById(bookingId);
+            var booking = _bookingRepository.GetBookingById(request.BookingId);
+
             if (booking == null)
-            {
                 throw new ArgumentException("Lịch đặt không tồn tại");
-            }
+
             if (booking.Status != "CheckedIn")
+                throw new InvalidOperationException("Chỉ có thể check-out sau khi check-in");
+
+            if (booking.Slot == null)
+                throw new InvalidOperationException("Lịch đặt chưa có slot");
+
+            var now = TimeOnly.FromDateTime(DateTime.Now);
+            if (now < booking.Slot.EndTime)
+                throw new InvalidOperationException("Chưa đến thời gian check-out");
+
+            // ❌ chặn check-out nhiều lần
+            if (_checkoutRepository.ExistsByBookingId(booking.BookingId))
+                throw new InvalidOperationException("Lịch đặt đã được check-out");
+
+            var checkouts = request.ImageUrls.Select(img => new Checkout
             {
-                throw new InvalidOperationException("Chỉ có thể check-out cho các lịch đặt đã được check-in");
-            }
-            var endTime = booking.Slot?.EndTime;
-            var timeNow = TimeOnly.Parse(DateTime.Now.ToString("HH:mm"));
-            if (timeNow < endTime)
-            {
-                throw new InvalidOperationException("Chỉ có thể check-out sau khi kết thúc thời gian đã đặt phòng");
-            }
-            booking.Status = "CheckOut";
+                BookingId = booking.BookingId,
+                ImageUrl = img,
+                Comment = request.Comment,
+                CreateAt = DateTime.Now
+            }).ToList();
+
+            _checkoutRepository.AddRange(checkouts);
+
+            booking.Status = "CheckedOut";
             booking.UpdateAt = DateTime.Now;
             _bookingRepository.Update(booking);
             return new BookingResponse

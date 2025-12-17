@@ -35,6 +35,10 @@ public partial class Booking
 
     public virtual User? ApprovedByUser { get; set; }
 
+    public virtual ICollection<Checkin> Checkins { get; set; } = new List<Checkin>();
+
+    public virtual ICollection<Checkout> Checkouts { get; set; } = new List<Checkout>();
+
     public virtual Facility? Facility { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
