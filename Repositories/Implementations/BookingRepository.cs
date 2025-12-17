@@ -89,9 +89,9 @@ namespace SWP391_BL3.Repositories.Implementations
         public Booking GetByIdWithDetails(int id)
         {
             return _context.Bookings
-                .Include(b => b.User)          // Lấy thông tin User
-                .Include(b => b.Facility)      // Lấy thông tin Facility
-                .Include(b => b.Slot)          // Lấy thông tin Slot
+                .Include(b => b.User)   
+                .Include(b => b.Facility)   
+                .Include(b => b.Slot)    
                 .FirstOrDefault(b => b.BookingId == id);
         }
         public bool HasUserBookedInSlot(int userId, int facilityId, DateOnly bookingDate, int slotId)
@@ -122,6 +122,7 @@ namespace SWP391_BL3.Repositories.Implementations
         {
             var List = (from b in _context.Bookings
                         join u in _context.Users on b.UserId equals u.UserId
+                        join r in _context.Roles on u.RoleId equals r.RoleId
                         join f in _context.Facilities on b.FacilityId equals f.FacilityId
                         join sl in _context.Slots on b.SlotId equals sl.SlotId
                         orderby  b.CreateAt descending
@@ -129,6 +130,7 @@ namespace SWP391_BL3.Repositories.Implementations
                         {
                             BookingId = b.BookingId,
                             BookingCode = b.BookingCode,
+                            RoleName = r.RoleName,
                             FullName = u.FullName,
                             FacilityCode = f.FacilityCode,
                             BookingDate = b.BookingDate,

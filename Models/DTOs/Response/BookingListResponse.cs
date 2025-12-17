@@ -4,6 +4,7 @@
     {
         public int BookingId { get; set; }
         public string BookingCode { get; set; }
+        public string RoleName { get; set; }
         public string FullName { get; set; }
         public string FacilityCode { get; set; }
         public TimeOnly? StartTime { get; set; }  
