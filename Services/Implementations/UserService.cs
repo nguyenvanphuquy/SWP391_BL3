@@ -174,7 +174,7 @@ namespace SWP391_BL3.Services.Implementations
                     else
                     {
                         // Tạo user mới với role mặc định (Customer)
-                        var customerRole = _roleRepository.GetByName("Customer");
+                        var customerRole = _roleRepository.GetByName("Student");
                         if (customerRole == null)
                         {
                             throw new Exception("Không tìm thấy role Customer");
