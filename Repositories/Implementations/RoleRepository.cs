@@ -1,5 +1,4 @@
-﻿using BE_SWP391.Repositories.Interfaces;
-using SWP391_BL3.Data;
+﻿using SWP391_BL3.Data;
 using SWP391_BL3.Models.Entities;
 using SWP391_BL3.Repositories.Interfaces;
 namespace SWP391_BL3.Repositories.Implementations

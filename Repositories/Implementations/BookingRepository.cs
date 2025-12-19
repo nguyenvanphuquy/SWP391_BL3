@@ -141,33 +141,79 @@ namespace SWP391_BL3.Repositories.Implementations
                         }).ToList();
             return List;
         }
-        public BookingDetailResponse GetBookingDetail(int bookingId)
+        public BookingDetailResponse? GetBookingDetail(int bookingId)
         {
-            var detail = (from b in _context.Bookings
-                          join u in _context.Users on b.UserId equals u.UserId
-                          join f in _context.Facilities on b.FacilityId equals f.FacilityId
-                          join ft in _context.FacilityTypes on f.TypeId equals ft.TypeId
-                          join c in _context.Campuses on f.CampusId equals c.CampusId
-                          join sl in _context.Slots on b.SlotId equals sl.SlotId
-                          where b.BookingId == bookingId
-                          select new BookingDetailResponse
-                          {
-                              BookingId = b.BookingId,
-                              BookingCode = b.BookingCode,
-                              Status = b.Status,
-                              CreateAt = b.CreateAt,
-                              FullName = u.FullName,
-                              FacilityName = f.FacilityCode,
-                              FacilityType = ft.TypeName,
-                              CampusName = c.CampusName,
-                              Capacity = f.Capacity,
-                              BookingDate = b.BookingDate,
-                              StartTime = sl.StartTime,
-                              EndTime = sl.EndTime,
-                              Purpose = b.Purpose,
-                          }).FirstOrDefault();
-            return detail;
+            var booking = _context.Bookings
+                .Include(b => b.User)
+                    .ThenInclude(u => u.Role)
+                .Include(b => b.Facility)
+                    .ThenInclude(f => f.Type)
+                .Include(b => b.Facility)
+                    .ThenInclude(f => f.Campus)
+                .Include(b => b.Slot)
+                .Include(b => b.Checkins)
+                .Include(b => b.Checkouts)
+                .FirstOrDefault(b => b.BookingId == bookingId);
+
+            if (booking == null) return null;
+
+            return new BookingDetailResponse
+            {
+                BookingId = booking.BookingId,
+                BookingCode = booking.BookingCode,
+                Purpose = booking.Purpose,
+                Status = booking.Status,
+                CreateAt = booking.CreateAt,
+
+                FullName = booking.User?.FullName,
+                Email = booking.User?.Email,
+                Phone = booking.User?.Phone,
+                RoleName = booking.User?.Role?.RoleName,
+
+                FacilityId = booking.Facility?.FacilityId ?? 0,
+                FacilityCode = booking.Facility?.FacilityCode,
+                Capacity = booking.Facility?.Capacity,
+                Floor = booking.Facility?.Floor,
+                Equipment = booking.Facility?.Equipment,
+
+                TypeName = booking.Facility?.Type?.TypeName,
+                Description = booking.Facility?.Type?.Description,
+
+                CampusName = booking.Facility?.Campus?.CampusName,
+                Address = booking.Facility?.Campus?.Address,
+                PhoneCampus = booking.Facility?.Campus?.Phone,
+
+                BookingDate = booking.BookingDate,
+                StartTime = booking.Slot?.StartTime,
+                EndTime = booking.Slot?.EndTime,
+
+                CheckIn = booking.Checkins.Any()
+                    ? new CheckInOutInfoResponse
+                    {
+                        CreateAt = booking.Checkins.Min(x => x.CreateAt),
+                        Comment = booking.Checkins.First().Comment,
+                        ImageUrls = booking.Checkins
+                            .Select(x => x.ImageUrl)
+                            .Where(x => !string.IsNullOrEmpty(x))
+                            .ToList()
+                    }
+                    : null,
+
+                CheckOut = booking.Checkouts.Any()
+                    ? new CheckInOutInfoResponse
+                    {
+                        CreateAt = booking.Checkouts.Min(x => x.CreateAt),
+                        Comment = booking.Checkouts.First().Comment,
+                        ImageUrls = booking.Checkouts
+                            .Select(x => x.ImageUrl)
+                            .Where(x => !string.IsNullOrEmpty(x))
+                            .ToList()
+                    }
+                    : null
+            };
         }
+
+
         public List<ListBookingUserResponse> GetListBookingUsers(int userId)
         {
             var list = (from b in _context.Bookings

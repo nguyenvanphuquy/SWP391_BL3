@@ -7,6 +7,26 @@ using SWP391_BL3.Services.Interfaces;
 
 namespace SWP391_BL3.Controllers
 {
+    /*
+     * ============================================
+     * CONTROLLER - TRẢ LỜI CÂU HỎI HỘI ĐỒNG
+     * ============================================
+     * 
+     * Q31: Có xử lý exception đầy đủ không?
+     * A31: CÓ xử lý exception cơ bản:
+     * - InvalidOperationException → 409 Conflict (business rule violation)
+     * - ArgumentException → 400 BadRequest (invalid input)
+     * - KeyNotFoundException → 404 NotFound (resource not found)
+     * - Exception → 500 InternalServerError (unexpected error)
+     * - Có thể cải thiện: Dùng global exception handler middleware để tránh code lặp lại
+     * 
+     * Q32: Response format có nhất quán không?
+     * A32: CHƯA nhất quán.
+     * - Success: Trả về object trực tiếp (Ok(result))
+     * - Error: Trả về { message: "..." }
+     * - Nên: Dùng ApiResponse wrapper để format nhất quán
+     * - Ví dụ: { success: true, data: {...}, message: "..." }
+     */
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase
@@ -16,6 +36,15 @@ namespace SWP391_BL3.Controllers
         {
             _bookingService = bookingService;
         }
+        
+        /*
+         * Q33: Có validate input không?
+         * A33: CÓ validate ở Service layer.
+         * - Controller: Chỉ nhận request và gọi service
+         * - Service: Validate business rules (date, capacity, conflict, etc.)
+         * - Có thể cải thiện: Thêm Data Annotations hoặc FluentValidation ở DTO
+         * - Ví dụ: [Required], [Range], [EmailAddress] attributes
+         */
         [HttpPost]
         public IActionResult Create(BookingRequest request)
         {
@@ -42,6 +71,8 @@ namespace SWP391_BL3.Controllers
             catch (Exception ex)
             {
                 // Lỗi không xác định
+                // Q34: Có log exception không?
+                // A34: CHƯA log. Nên log exception để debug và monitor
                 return StatusCode(500, new { message = "Lỗi hệ thống", detail = ex.Message });
             }
         }

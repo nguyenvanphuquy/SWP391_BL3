@@ -38,10 +38,38 @@ public partial class FptBookingContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    /*
+     * Q21: Tại sao dùng DateOnly cho BookingDate?
+     * A21: 
+     * - DateOnly: Chỉ lưu ngày, không có time (phù hợp với booking date)
+     * - DateTime: Có cả ngày và giờ (không cần thiết cho booking date)
+     * - Ưu điểm: Rõ ràng hơn, không lo lắng về timezone, tiết kiệm storage
+     * - Lưu ý: DateOnly chỉ có từ .NET 6+, cần SQL Server 2008+
+     */
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server=localhost; database=FPT_BOOKING; uid=sa; pwd=1234567890; TrustServerCertificate=True;");
+    {
+        /*
+         * Q22: Connection string có an toàn không?
+         * A22: 
+         * - Hiện tại: Hardcoded trong code (KHÔNG AN TOÀN cho production)
+         * - Nên: Connection string được config trong appsettings.json (đã làm)
+         * - Production: Dùng Azure Key Vault, AWS Secrets Manager, hoặc Environment Variables
+         * - Lưu ý: Không commit connection string vào git
+         */
+        // Connection string được config trong Program.cs qua DI
+        // Không cần config ở đây nữa
+    }
 
+    /*
+     * Q23: Có index cho các cột thường query không?
+     * A23: CHƯA có index tùy chỉnh.
+     * - EF Core tự tạo index cho Primary Key và Foreign Key
+     * - Nên thêm index cho:
+     *   + Users.Email (đã có unique index)
+     *   + Bookings.BookingDate, Status, FacilityId (query thường xuyên)
+     *   + Bookings.UserId (query booking của user)
+     * - Cách: modelBuilder.Entity<Booking>().HasIndex(b => b.BookingDate);
+     */
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Booking>(entity =>
@@ -49,6 +77,11 @@ public partial class FptBookingContext : DbContext
             entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951AED2924C189");
 
             entity.ToTable("Booking");
+            
+            // TODO: Thêm index để tối ưu query
+            // entity.HasIndex(b => b.BookingDate);
+            // entity.HasIndex(b => new { b.FacilityId, b.BookingDate, b.SlotId });
+            // entity.HasIndex(b => b.Status);
 
             entity.Property(e => e.ApprovedAt).HasColumnType("datetime");
             entity.Property(e => e.BookingCode).HasMaxLength(100);

@@ -1,11 +1,9 @@
 ﻿using BCrypt.Net;
-using BE_SWP391.Repositories.Interfaces;
 using Google.Apis.Auth;
 using SWP391_BL3.Configurations;
 using SWP391_BL3.Models.DTOs.Request;
 using SWP391_BL3.Models.DTOs.Response;
 using SWP391_BL3.Models.Entities;
-using SWP391_BL3.Repositories.Implementations;
 using SWP391_BL3.Repositories.Interfaces;
 using SWP391_BL3.Services.Interfaces;
 namespace SWP391_BL3.Services.Implementations
@@ -137,17 +135,33 @@ namespace SWP391_BL3.Services.Implementations
             _userRepository.UpdateStatus(id, "Inactive");
             return true;
         }
+    /*
+     * Q28: Google OAuth có validate đúng cách không?
+     * A28: CÓ.
+     * - Validate token với Google server (GoogleJsonWebSignature.ValidateAsync)
+     * - Validate Audience (ClientId) để đảm bảo token từ app của mình
+     * - Validate signature để chống token giả mạo
+     * - Lưu ý: .Result có thể gây deadlock, nên dùng await async
+     * 
+     * Q29: Có xử lý trường hợp token giả mạo không?
+     * A29: CÓ. ValidateAsync() sẽ throw exception nếu token không hợp lệ
+     * - Invalid signature → exception
+     * - Expired token → exception
+     * - Wrong audience → exception
+     */
     public LoginResponse? GoogleLogin(string idToken)
         {
             try
             {
                 // 1. Xác thực token với Google
+                // Validate token với Google server để đảm bảo token hợp lệ
                 var clientId = _configuration["Authentication:Google:ClientId"];
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = new[] { clientId }
+                    Audience = new[] { clientId } // Chỉ chấp nhận token từ app của mình
                 };
 
+                // TODO: Nên dùng await thay vì .Result để tránh deadlock
                 var payload = GoogleJsonWebSignature.ValidateAsync(idToken, settings).Result;
 
                 if (payload == null)
@@ -224,7 +238,16 @@ namespace SWP391_BL3.Services.Implementations
             }
             catch (Exception ex)
             {
+                /*
+                 * Q30: Có logging đầy đủ không?
+                 * A30: CHƯA đầy đủ.
+                 * - Hiện tại: Chỉ dùng Console.WriteLine (không phù hợp production)
+                 * - Nên: Dùng ILogger<T> để log structured logging
+                 * - Nên log: Exception details, User info (không log sensitive data)
+                 * - Production: Dùng Serilog, NLog, hoặc Application Insights
+                 */
                 // Log error nếu cần
+                // TODO: Thay bằng ILogger
                 Console.WriteLine($"Google Login Error: {ex.Message}");
                 return null;
             }
