@@ -105,9 +105,9 @@ namespace SWP391_BL3.DAL.Repositories.Implementations
                     Slots = _context.Slots
                             .FromSqlRaw(@"
                                 SELECT s.* 
-                                FROM Slot s  -- Ð?i t? Slots thành Slot
-                                INNER JOIN Facility_Slot fs ON s.SlotId = fs.SlotId
-                                WHERE fs.FacilityId = {0}
+                                FROM ""Slot"" s
+                                INNER JOIN ""Facility_Slot"" fs ON s.""SlotId"" = fs.""SlotId""
+                                WHERE fs.""FacilityId"" = {0}
                             ", facilityId)
                             .OrderBy(s => s.SlotNumber)
                             .Select(s => new SlotItem

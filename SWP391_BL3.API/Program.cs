@@ -11,6 +11,9 @@ using SWP391_BL3.BLL.Services.Implementations;
 using SWP391_BL3.BLL.Services.Interfaces;
 using System.Text;
 
+// Npgsql DateTime compatibility with existing timestamp columns
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 /*
  * ============================================
  * KI?N TR?C H? TH?NG - TR? L?I C?U H?I H?I ??NG
@@ -114,7 +117,7 @@ builder.Services.AddSwaggerGen(c =>
  * - Production: N?n d?ng Azure Key Vault, AWS Secrets Manager, ho?c Environment Variables
  */
 builder.Services.AddDbContext<FptBookingContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /*
  * Q7: T?i sao d?ng AddScoped cho Repository v? Service?

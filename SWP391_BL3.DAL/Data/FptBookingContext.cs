@@ -83,11 +83,11 @@ public partial class FptBookingContext : DbContext
             // entity.HasIndex(b => new { b.FacilityId, b.BookingDate, b.SlotId });
             // entity.HasIndex(b => b.Status);
 
-            entity.Property(e => e.ApprovedAt).HasColumnType("datetime");
+            entity.Property(e => e.ApprovedAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.BookingCode).HasMaxLength(100);
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.ApprovedByUser).WithMany(p => p.BookingApprovedByUsers)
                 .HasForeignKey(d => d.ApprovedByUserId)
@@ -114,7 +114,7 @@ public partial class FptBookingContext : DbContext
 
             entity.Property(e => e.Address).HasMaxLength(300);
             entity.Property(e => e.CampusName).HasMaxLength(200);
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
         });
@@ -126,7 +126,7 @@ public partial class FptBookingContext : DbContext
             entity.ToTable("Checkin");
 
             entity.Property(e => e.Comment).HasMaxLength(255);
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.Booking).WithMany(p => p.Checkins)
                 .HasForeignKey(d => d.BookingId)
@@ -140,7 +140,7 @@ public partial class FptBookingContext : DbContext
             entity.ToTable("Checkout");
 
             entity.Property(e => e.Comment).HasMaxLength(255);
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.Booking).WithMany(p => p.Checkouts)
                 .HasForeignKey(d => d.BookingId)
@@ -153,10 +153,10 @@ public partial class FptBookingContext : DbContext
 
             entity.ToTable("Facility");
 
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.FacilityCode).HasMaxLength(100);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.Campus).WithMany(p => p.Facilities)
                 .HasForeignKey(d => d.CampusId)
@@ -190,7 +190,7 @@ public partial class FptBookingContext : DbContext
 
             entity.ToTable("Facility_Type");
 
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.TypeName).HasMaxLength(200);
         });
 
@@ -200,7 +200,7 @@ public partial class FptBookingContext : DbContext
 
             entity.ToTable("Feedback");
 
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.Facility).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.FacilityId)
@@ -217,7 +217,7 @@ public partial class FptBookingContext : DbContext
 
             entity.ToTable("Notification");
 
-            entity.Property(e => e.Date).HasColumnType("datetime");
+            entity.Property(e => e.Date).HasColumnType("timestamp without time zone");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -252,7 +252,7 @@ public partial class FptBookingContext : DbContext
 
             entity.HasIndex(e => e.Email, "UQ__Users__A9D10534B9794374").IsUnique();
 
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.FullName).HasMaxLength(200);
             entity.Property(e => e.PasswordHash)
@@ -260,7 +260,7 @@ public partial class FptBookingContext : DbContext
                 .HasColumnName("password_hash");
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
