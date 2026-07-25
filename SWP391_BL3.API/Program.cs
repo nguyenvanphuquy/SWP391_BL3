@@ -56,11 +56,25 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:5173",  // ? Vite dev server
-                "http://localhost:8080",  // ? Production/other port
-                "http://localhost:3000"   // ? Create React App (n?u c?n)
-            )
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrWhiteSpace(origin)) return false;
+
+                // Local FE
+                if (origin.StartsWith("http://localhost:", StringComparison.OrdinalIgnoreCase)
+                    || origin.StartsWith("https://localhost:", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                // Netlify production
+                if (origin.Equals("https://fptbookingbl3.netlify.app", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                // Netlify deploy previews (*.netlify.app)
+                if (origin.EndsWith(".netlify.app", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                return false;
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -192,12 +206,9 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger enabled for demo / Railway (also useful outside Development)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
